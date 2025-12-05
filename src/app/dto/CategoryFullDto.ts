@@ -1,10 +1,3 @@
-export interface CategoryDto {
-  id?: number;
-  name: string;
-  description?: string;
-  isActive?: boolean;
-}
-
 export interface CategoryFullDto {
   id: number;
   name: string;

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CategoryDto, CategoryFullDto } from './category.dto';
+import { CategoryDto } from '../../dto/CategoryDto';
+import { CategoryFullDto } from '../../dto/CategoryFullDto';
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
