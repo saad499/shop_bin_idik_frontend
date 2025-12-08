@@ -1,1 +1,47 @@
 /* Merchant Product styles */
+.product-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 500px;
+}
+.product-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-right: 24px;
+}
+.product-info {
+  flex: 1;
+}
+.product-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.product-price {
+  color: #1890ff;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.product-stock {
+  color: #28a745;
+  margin-bottom: 12px;
+}
+.btn-primary {
+  background: #1890ff;
+  border: none;
+}
+
+.nz-table {
+  margin: 40px auto;
+  padding: 32px;
+  max-width: 900px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}

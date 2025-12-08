@@ -10,6 +10,7 @@ import { MerchantReviewComponent } from './review/review.component';
 import { MerchantSettingsComponent } from './settings/settings.component';
 
 export const merchantRoutes: Routes = [
+  { path: '', redirectTo: 'product', pathMatch: 'full' },
   { path: 'category', component: MerchantCategoryComponent },
   { path: 'dashboard', component: MerchantDashboardComponent },
   { path: 'delivery', component: MerchantDeliveryComponent },

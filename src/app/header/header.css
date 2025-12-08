@@ -1,0 +1,28 @@
+.header {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 10px 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.logo {
+  height: 40px;
+  margin-right: 30px;
+}
+.nav {
+  display: flex;
+  gap: 20px;
+}
+.nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.nav a.active,
+.nav a:hover {
+  background: #1890ff;
+  color: #fff;
+}
