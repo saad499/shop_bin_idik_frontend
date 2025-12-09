@@ -103,8 +103,9 @@
 </nz-drawer>
 
 <!--add category-->
-<!--
+
 <nz-drawer 
+*ngIf="categoryDrawerVisible"
   [nzVisible]="categoryDrawerVisible"
   nzTitle="Ajouter une catégorie"
   [nzWidth]="400"
@@ -119,8 +120,8 @@
       <label for="categoryDescription" class="form-label">Description</label>
       <textarea id="categoryDescription" class="form-control" [(ngModel)]="newCategory.description" name="categoryDescription"></textarea>
     </div>
-    <button nz-button nzType="primary" (click)="addCategory()">Ajouter</button>
+    <button nz-button nzType="primary" (click)="addCategory()" [disabled]="isAddingCategory" [nzLoading]="isAddingCategory">Ajouter</button>
   </form>
   
-</nz-drawer>-->
+</nz-drawer>
 

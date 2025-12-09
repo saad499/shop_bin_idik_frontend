@@ -30,6 +30,7 @@ export class Header implements OnInit {
   selectedCategory: any = null;
   categoryDrawerVisible = false;
   newCategory: CategoryDto = { name: '', description: '', isActive: true  };
+  isAddingCategory = false;
   
   constructor(private categoryService: CategoryService, private cdr: ChangeDetectorRef) {}    
 
@@ -46,7 +47,9 @@ export class Header implements OnInit {
     console.log('Opening drawer, visible before:', this.visible);
     this.visible = true;
     console.log('Opening drawer, visible after:', this.visible);
-    this.cdr.detectChanges();
+     setTimeout(() => {
+      this.visible = true;
+    }, 0);
   }
 
 
@@ -69,31 +72,42 @@ export class Header implements OnInit {
     }
   }
 
-  openCategoryDrawer() {
-    this.categoryDrawerVisible = true;
-    this.newCategory = { name: '', description: '' };
-}
-  onEditCategory(cat: any) {
+  openCategoryDrawer(): void {
+    setTimeout(() => {
+      this.categoryDrawerVisible = true;
+      this.newCategory = { name: '', description: '', isActive: true };
+    }, 0);
+  }
+  
+  onEditCategory(cat: any): void {
     this.selectedCategory = cat;
-    this.categoryDrawerVisible = true;
+    setTimeout(() => {
+      this.categoryDrawerVisible = true;
+    }, 0);
   }
 
   closeCategoryDrawer() {
     this.categoryDrawerVisible = false;
   }
 
-  addCategory() {
+  addCategory(): void {
+    if (this.isAddingCategory) return;
+    this.isAddingCategory = true;
     this.categoryService.create(this.newCategory).subscribe({
-    next: (result) => {
-      // Optionally refresh categories or show a success message
-      this.closeCategoryDrawer();
-      this.newCategory = { name: '', description: '', isActive: true };
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      // Handle error (show message, etc.)
-    }
-  });
+      next: (result) => {
+        setTimeout(() => {
+          this.closeCategoryDrawer();
+          this.newCategory = { name: '', description: '', isActive: true };
+          // Refresh categories list
+          this.categoryService.getAllCategoriesFull().subscribe(data => {
+            this.categories = data;
+          });
+        }, 0);
+      },
+      error: (err) => {
+        console.error('Error adding category:', err);
+      }
+    });
   }
 
   getActiveCategory() {
