@@ -2,3 +2,63 @@
 @import 'ng-zorro-antd/ng-zorro-antd.min.css';
 @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 @import "../node_modules/bootstrap-icons/font/bootstrap-icons.css";
+
+@media (max-width: 992px) {
+  .container.p-5 { padding: 0.5rem !important; }
+  nz-table { font-size: 0.95rem; }
+  .navbar-nav { flex-direction: column; align-items: flex-start; }
+  .navbar-nav .nav-item { width: 100%; }
+  .navbar-nav .nav-link { padding-left: 0; padding-right: 0; }
+  nz-drawer { width: 100vw !important; min-width: 0 !important; left: 0 !important; }
+}
+
+@media (max-width: 768px) {
+  .container.p-5 { padding: 0.25rem !important; }
+  nz-table { font-size: 0.9rem; }
+  .navbar { flex-direction: column; }
+  .navbar-brand img.logo { width: 40px; height: 40px; }
+  .navbar-nav { flex-direction: column; align-items: flex-start; }
+  .navbar-nav .nav-item { width: 100%; }
+  .navbar-nav .nav-link { font-size: 1rem; padding: 0.5rem 0; }
+  nz-drawer { width: 100vw !important; min-width: 0 !important; left: 0 !important; }
+  .product-table-wrapper, nz-table { width: 100% !important; overflow-x: auto; }
+  .row > [class^='col-'], .row > .col, .form-group, .col, .col-4, .col-6, .col-12, .col-1 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem !important;
+    padding: 0 !important;
+    display: block !important;
+    flex-direction: column !important;
+  }
+  .form-control, nz-select, input[type="color"] { width: 100% !important; min-width: 0 !important; }
+  .image-preview { width: 100% !important; max-width: 300px; margin: 0 auto 1rem auto; display: block; }
+  .drawer-form-actions { flex-direction: column !important; gap: 0.5rem; }
+  .mb-3 { margin-bottom: 1rem !important; }
+  .mt-2 { margin-top: 0.5rem !important; }
+}
+
+@media (max-width: 576px) {
+  .container.p-5 { padding: 0.1rem !important; }
+  nz-table { font-size: 0.85rem; }
+  .navbar-brand img.logo { width: 32px; height: 32px; }
+  .navbar-nav .nav-link { font-size: 0.95rem; }
+  nz-drawer { width: 100vw !important; min-width: 0 !important; left: 0 !important; }
+  .drawer-form-actions { flex-direction: column !important; gap: 0.5rem; }
+}
+
+/* Ensure drawer content scrolls on small screens */
+nz-drawer .nz-drawer-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Extra: Make footer responsive */
+footer, .footer {
+  width: 100%;
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.95rem;
+}
+@media (max-width: 576px) {
+  footer, .footer { font-size: 0.85rem; padding: 0.5rem 0; }
+}

@@ -27,23 +27,24 @@
       </div>
     </div>
   </nav>
+  </header>
   <nz-drawer
   *ngIf="visible"
   [nzBodyStyle]="{ overflow: 'auto' }"
   [nzMaskClosable]="false"
-  [nzWidth]="600"
+  [nzWidth]="getDrawerWidth()"
   [nzVisible]="visible"
   nzTitle="Ajouter un produit"
   [nzFooter]="footerTpl"
   (nzOnClose)="closeDrawer()"
 >
   <form nz-form *nzDrawerContent>
-    <div class="row">
-        <div class="col">
+    <div class="row flex-column flex-md-row">
+        <div class="col mb-3">
             <label for="name_product">Nom du produit : </label>
             <input nz-input placeholder="Produit" [(ngModel)]="value" name="productName" />
         </div>
-        <div class="col">
+        <div class="col mb-3">
             <label for="price">Prix : </label>
             <input nz-input placeholder="Produit" [(ngModel)]="value" name="price" />
         </div>
@@ -58,23 +59,19 @@
         <div class="col-4">
             <label for="description">Categorie :</label>
             <nz-select nzShowSearch 
-                       nzAllowClear 
-                       nzPlaceHolder="Sélectionner une catégorie" 
-                       [(ngModel)]="selectedValue"
-                       name="categorie"
-                       class="w-100">
-                <nz-option nzLabel="Jack" nzValue="jack"></nz-option>
-                <nz-option nzLabel="Lucy" nzValue="lucy"></nz-option>
-                <nz-option nzLabel="Tom" nzValue="tom"></nz-option>
-            </nz-select>
+           nzAllowClear 
+           nzPlaceHolder="Sélectionner une catégorie" 
+           [(ngModel)]="selectedValue"
+           name="categorie"
+           class="w-100">
+            <nz-option *ngFor="let cat of categories" [nzLabel]="cat.nom" [nzValue]="cat.id"></nz-option>
+          </nz-select>
         </div>
-        <div class="col-1">
-            <label for="description">a</label>
-            <input nz-input placeholder="Produit" [(ngModel)]="value" name="zip1" />
+        <div class="col-1 d-flex align-items-center justify-content-center">
+          <i class="bi bi-pencil mt-1" style="font-size: 1.5rem; cursor: pointer;"></i>
         </div>
-        <div class="col-1">
-            <label for="description">a</label>
-            <input nz-input placeholder="Produit" [(ngModel)]="value" name="zip2" />
+        <div class="col-1 d-flex align-items-center justify-content-center">
+          <i class="bi bi-plus mt-1" style="font-size: 2.5rem; cursor: pointer;" (click)="openCategoryDrawer()"></i>
         </div>
         <div class="col-6">
             <label for="description">Stock disponible :</label>
@@ -96,72 +93,6 @@
       <label for="productColor">Couleur du produit :</label>
       <input type="color" id="productColor" class="form-control form-control-color" [(ngModel)]="productColor" name="productColor" style="width: 60px; height: 40px; padding: 2px;">
     </div>
-
-    <!--<div nz-row [nzGutter]="8">
-      <div nz-col nzSpan="12" class="mb-3">
-        <nz-form-item>
-          <nz-form-label>Nom du produit</nz-form-label>
-          <br>
-          <nz-form-control>
-            <input nz-input placeholder="Nom du produit" />
-          </nz-form-control>
-        </nz-item>
-      </div>
-      <div nz-col nzSpan="12">
-        <nz-form-item>
-          <nz-form-label>Prix</nz-form-label>
-          <nz-form-control>
-            <input nz-input type="number" placeholder="Prix" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-    </div>
-    <div nz-row [nzGutter]="8">
-      <div nz-col nzSpan="12">
-        <nz-form-item>
-          <nz-form-label>Description</nz-form-label>
-          <nz-form-control>
-            <textarea nz-input placeholder="Description" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-      <div nz-col nzSpan="12">
-        <nz-form-item>
-          <nz-form-label>Catégorie</nz-form-label>
-          <nz-form-control>
-            <nz-select nzPlaceHolder="Sélectionner une catégorie"></nz-select>
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-    </div>
-    <div nz-row [nzGutter]="8">
-      <div nz-col nzSpan="12">
-        <nz-form-item>
-          <nz-form-label>Stock</nz-form-label>
-          <nz-form-control>
-            <input nz-input type="number" placeholder="Stock" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-      <div nz-col nzSpan="12">
-        <nz-form-item>
-          <nz-form-label>Image du produit</nz-form-label>
-          <nz-form-control>
-            <input nz-input type="file" accept="image/*" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-    </div>
-    <div nz-row [nzGutter]="8">
-      <div nz-col nzSpan="12">
-        <nz-form-item>
-          <nz-form-label>Couleur</nz-form-label>
-          <nz-form-control>
-            <input nz-input type="color" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-    </div>-->
   </form>
   <ng-template #footerTpl>
     <div style="float: right">
@@ -170,4 +101,26 @@
     </div>
   </ng-template>
 </nz-drawer>
-</header>
+
+<!--add category-->
+<!--
+<nz-drawer 
+  [nzVisible]="categoryDrawerVisible"
+  nzTitle="Ajouter une catégorie"
+  [nzWidth]="400"
+  (nzOnClose)="closeCategoryDrawer()"
+>
+  <form nz-form *nzDrawerContent>
+    <div class="mb-3">
+      <label for="categoryName" class="form-label">Nom de la catégorie</label>
+      <input id="categoryName" class="form-control" [(ngModel)]="newCategory.name" name="categoryName" />
+    </div>
+    <div class="mb-3">
+      <label for="categoryDescription" class="form-label">Description</label>
+      <textarea id="categoryDescription" class="form-control" [(ngModel)]="newCategory.description" name="categoryDescription"></textarea>
+    </div>
+    <button nz-button nzType="primary" (click)="addCategory()">Ajouter</button>
+  </form>
+  
+</nz-drawer>-->
+
