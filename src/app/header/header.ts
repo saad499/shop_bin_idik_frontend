@@ -83,6 +83,10 @@ readonly listOfOption: string[] = alphabet();
   addProduct(): void {
     if (this.isAddingProduct) return;
     
+    console.log('=== Add Product ===');
+    console.log('Selected Category ID:', this.selectedValue);
+    console.log('Selected Category Type:', typeof this.selectedValue);
+    
     // Parse sizes from comma-separated input
     this.newProduct.sizes = this.sizesInput
       .split(',')
@@ -90,6 +94,8 @@ readonly listOfOption: string[] = alphabet();
       .filter(s => s.length > 0);
     
     this.newProduct.categorieId = this.selectedValue || 0;
+    console.log('Product categorieId:', this.newProduct.categorieId);
+    console.log('Product data:', this.newProduct);
     
     this.isAddingProduct = true;
     this.cdr.detectChanges();
@@ -104,12 +110,14 @@ readonly listOfOption: string[] = alphabet();
         this.cdr.detectChanges();
         // Optionally show success message
         alert('Produit ajouté avec succès!');
+        console.log('========================');
       },
       error: (err: any) => {
         console.error('Error adding product:', err);
         this.isAddingProduct = false;
         this.cdr.detectChanges();
         alert('Erreur lors de l\'ajout du produit');
+        console.log('========================');
       }
     });
   }
@@ -251,27 +259,32 @@ saveCategory(): void {
 }
 
 editSelectedCategory(): void {
+  console.log('=== Edit Selected Category ===');
   console.log('selectedValue:', this.selectedValue);
   console.log('selectedValue type:', typeof this.selectedValue);
   console.log('categories:', this.categories);
   
   if (this.selectedValue === null || this.selectedValue === undefined) {
-    console.log('No category selected');
+    console.log('No category selected - cannot edit');
+    console.log('========================');
     return;
   }
   
   console.log('Looking for category with id:', this.selectedValue);
   const categoryToEdit = this.categories.find(cat => {
-    console.log('Comparing cat.id:', cat.id, 'typeof:', typeof cat.id, 'with selectedValue:', this.selectedValue, 'typeof:', typeof this.selectedValue);
-    return cat.id === this.selectedValue;
+    const match = cat.id === this.selectedValue;
+    console.log(`Comparing cat.id: ${cat.id} (${typeof cat.id}) with selectedValue: ${this.selectedValue} (${typeof this.selectedValue}) => ${match}`);
+    return match;
   });
   console.log('Found category:', categoryToEdit);
   
   if (categoryToEdit) {
+    console.log('Opening edit drawer for category:', categoryToEdit.nom);
     this.onEditCategory(categoryToEdit);
   } else {
     console.log('Category not found in list');
   }
+  console.log('========================');
 }
 
 getDrawerWidth(): number | string {
@@ -285,7 +298,27 @@ getDrawerWidth(): number | string {
 
 
 onCategoryChange(value: any): void {
-  this.selectedValue = value ? Number(value) : undefined;
+  console.log('=== Category Selection ===');
+  console.log('Selected Category ID (original):', value);
+  console.log('Selected Category ID (converted):', value ? Number(value) : undefined);
+  console.log('Type:', typeof value);
+  
+  // Convert string to number if value exists, otherwise set to undefined
+  if (!value || value === '') {
+    this.selectedValue = undefined;
+  } else {
+    this.selectedValue = Number(value);
+  }
+  
+  console.log('selectedValue after conversion:', this.selectedValue);
+  console.log('selectedValue type after conversion:', typeof this.selectedValue);
+  
+  if (this.selectedValue === undefined || isNaN(this.selectedValue)) {
+    console.log('No category selected');
+  } else {
+    console.log('Category selected with ID:', this.selectedValue);
+  }
+  console.log('========================');
 }
 
 }

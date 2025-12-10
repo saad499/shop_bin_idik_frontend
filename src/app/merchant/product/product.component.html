@@ -27,7 +27,7 @@
             {{ size }}<span *ngIf="!last">, </span>
           </span>
         </td>
-        <td>{{ product.categorie.nom || 'N/A' }}</td>
+        <td>{{ product.categorie?.nom || 'N/A' }}</td>
         <td>
           <span [class]="'badge ' + (product.status === 'ACTIF' ? 'bg-success' : 'bg-danger')">
             {{ product.status }}
