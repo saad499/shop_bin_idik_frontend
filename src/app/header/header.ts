@@ -304,7 +304,11 @@ onCategoryChange(value: any): void {
   console.log('Type:', typeof value);
   
   // Convert string to number if value exists, otherwise set to undefined
-  this.selectedValue = value ? Number(value) : undefined;
+  if (!value || value === '') {
+    this.selectedValue = undefined;
+  } else {
+    this.selectedValue = Number(value);
+  }
   
   console.log('selectedValue after conversion:', this.selectedValue);
   console.log('selectedValue type after conversion:', typeof this.selectedValue);

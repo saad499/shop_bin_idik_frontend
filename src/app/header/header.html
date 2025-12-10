@@ -63,7 +63,7 @@
                 [(ngModel)]="selectedValue" 
                 (ngModelChange)="onCategoryChange($event)"
                 [ngModelOptions]="{standalone: true}">
-                <option [value]="null">Sélectionner une catégorie</option>
+                <option value="">Sélectionner une catégorie</option>
                 <option *ngFor="let cat of categories" [value]="cat.id">
                     {{ cat.nom }}
                 </option>
