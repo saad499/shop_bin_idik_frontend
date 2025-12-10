@@ -42,46 +42,81 @@
     <div class="row flex-column flex-md-row">
         <div class="col mb-3">
             <label for="name_product">Nom du produit : </label>
-            <input nz-input placeholder="Produit" [(ngModel)]="value" name="productName" />
+            <input nz-input placeholder="Produit" [(ngModel)]="newProduct.nom" [ngModelOptions]="{standalone: true}" />
         </div>
         <div class="col mb-3">
             <label for="price">Prix : </label>
-            <input nz-input placeholder="Produit" [(ngModel)]="value" name="price" />
+            <input nz-input placeholder="Produit" [(ngModel)]="newProduct.prix" [ngModelOptions]="{standalone: true}" />
         </div>
     </div>
     <div class="form-group pt-1">
         <label for="description">Description :</label>
-        <textarea class="form-control" id="description" rows="3"></textarea>
+        <textarea class="form-control" [(ngModel)]="newProduct.description" [ngModelOptions]="{standalone: true}" id="description" rows="3"></textarea>
     </div>
     
 
     <div class="row">
         <div class="col-4">
-            <label for="description">Categorie :</label>
-            <nz-select nzShowSearch 
-           nzAllowClear 
-           nzPlaceHolder="Sélectionner une catégorie" 
-           [(ngModel)]="selectedValue"
-           name="categorie"
-           class="w-100">
-            <nz-option *ngFor="let cat of categories" [nzLabel]="cat.nom" [nzValue]="cat.id"></nz-option>
+            <label for="category">Catégorie :</label>
+            <select 
+                class="form-select" 
+                [(ngModel)]="selectedValue" 
+                (ngModelChange)="onCategoryChange($event)"
+                [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null">Sélectionner une catégorie</option>
+                <option *ngFor="let cat of categories" [ngValue]="+cat.id">
+                    {{ cat.nom }}
+                </option>
+            </select>
+          <!--  <nz-select 
+            nzShowSearch 
+            nzAllowClear 
+            nzPlaceHolder="Sélectionner une catégorie" 
+            [(ngModel)]="selectedValue"
+            (ngModelChange)="onCategoryChange($event)"
+            [ngModelOptions]="{standalone: true}"
+            class="w-100">
+            <nz-option 
+              *ngFor="let cat of categories" 
+              [nzLabel]="cat.nom" 
+              [nzValue]="cat.id">
+            </nz-option>
           </nz-select>
+          <nz-select [(ngModel)]="singleValue" [nzSize]="size" nzShowSearch name="cat">
+            @for (option of listOfOption; track option) {
+              <nz-option [nzLabel]="option" [nzValue]="option"></nz-option>
+            }
+          </nz-select>-->
+          <small class="text-muted">Sélectionné: {{ selectedValue || 'Aucune' }} (Type: {{ typeof selectedValue }})</small>
         </div>
         <div class="col-1 d-flex align-items-center justify-content-center">
-          <i class="bi bi-pencil mt-1" style="font-size: 1.5rem; cursor: pointer;"></i>
+          <i class="bi bi-pencil mt-1" 
+             style="font-size: 1.5rem;" 
+             [style.cursor]="selectedValue ? 'pointer' : 'not-allowed'"
+             [style.opacity]="selectedValue ? '1' : '0.3'"
+             (click)="editSelectedCategory()"></i>
         </div>
         <div class="col-1 d-flex align-items-center justify-content-center">
           <i class="bi bi-plus mt-1" style="font-size: 2.5rem; cursor: pointer;" (click)="openCategoryDrawer()"></i>
         </div>
         <div class="col-6">
             <label for="description">Stock disponible :</label>
-            <input nz-input placeholder="Produit" [(ngModel)]="value" name="stock" />
+            <input nz-input placeholder="Produit" [(ngModel)]="newProduct.stock" [ngModelOptions]="{standalone: true}" />
         </div>
+        <div class="col-12 mb-3 mt-3">
+      <label for="sizes">Tailles disponibles :</label>
+      <input type="text" 
+             class="form-control" 
+             placeholder="Ex: S, M, L, XL (séparés par des virgules)" 
+             [(ngModel)]="sizesInput" 
+             [ngModelOptions]="{standalone: true}">
+      <small class="text-muted">Entrez les tailles séparées par des virgules</small>
+    </div>
     </div>
 
     <div class="col-12 mb-3">
       <label for="productImages">Images du produit :</label>
-      <input type="file" id="productImages" class="form-control" multiple accept="image/*" (change)="onFilesSelected($event)" name="productImages">
+      <input type="file" id="productImages" class="form-control" multiple accept="image/*" (change)="onFilesSelected($event)">
       <div class="mt-2" *ngIf="productImages.length">
         <div *ngFor="let file of productImages" class="mb-1">
           <span>{{ file.name }}</span>
@@ -91,13 +126,13 @@
     </div>
     <div class="col-12 mb-3">
       <label for="productColor">Couleur du produit :</label>
-      <input type="color" id="productColor" class="form-control form-control-color" [(ngModel)]="productColor" name="productColor" style="width: 60px; height: 40px; padding: 2px;">
+      <input type="color" id="productColor" class="form-control form-control-color" [(ngModel)]="productColor" [ngModelOptions]="{standalone: true}" style="width: 60px; height: 40px; padding: 2px;">
     </div>
   </form>
   <ng-template #footerTpl>
     <div style="float: right">
       <button nz-button style="margin-right: 8px;" (click)="closeDrawer()">Annuler</button>
-      <button nz-button nzType="primary" (click)="closeDrawer()">Ajouter</button>
+      <button nz-button nzType="primary" (click)="addProduct()">Ajouter</button>
     </div>
   </ng-template>
 </nz-drawer>
@@ -114,13 +149,15 @@
   <form nz-form *nzDrawerContent>
     <div class="mb-3">
       <label for="categoryName" class="form-label">Nom de la catégorie</label>
-      <input id="categoryName" class="form-control" [(ngModel)]="newCategory.name" name="categoryName" />
+      <input id="categoryName" class="form-control" [(ngModel)]="newCategory.nom" name="categoryName" />
     </div>
     <div class="mb-3">
       <label for="categoryDescription" class="form-label">Description</label>
       <textarea id="categoryDescription" class="form-control" [(ngModel)]="newCategory.description" name="categoryDescription"></textarea>
     </div>
-    <button nz-button nzType="primary" (click)="addCategory()" [disabled]="isAddingCategory" [nzLoading]="isAddingCategory">Ajouter</button>
+    <button nz-button nzType="primary" (click)="saveCategory()" [disabled]="isAddingCategory" [nzLoading]="isAddingCategory">
+      {{ selectedCategory ? 'Modifier' : 'Ajouter' }}
+    </button>
   </form>
   
 </nz-drawer>

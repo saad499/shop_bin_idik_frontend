@@ -1,34 +1,58 @@
-<div class="container p-5">
+<div class=" class container p-5">
   <div class="row mb-3">
     <div class="col-md-4 offset-md-8 d-flex justify-content-end">
       <input type="text" class="form-control w-auto" placeholder="Rechercher un produit...">
     </div>
   </div>
-  <nz-table>
-    <thead>
-      <tr>
-        <th>Nom</th>
+  <table class="table">
+  <thead>
+    <tr>
+      <th>Nom</th>
         <th>Prix</th>
         <th>Stock</th>
+        <th>Tailles</th>
         <th>Catégorie</th>
         <th>Status</th>
+        <th>Date création</th>
         <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>product</td>
-        <td>18 MAD</td>
-        <td>30</td>
-        <td>Catégorie</td>
-        <td><nz-switch [ngModel]="true"></nz-switch></td>
+    </tr>
+  </thead>
+  <tbody>
+   <tr *ngFor="let product of filteredProducts">
+        <td>{{ product.nom }}</td>
+        <td>{{ product.prix | currency:'MAD ' }}</td>
+        <td>{{ product.stock }}</td>
         <td>
-          <a>Action - name</a>
-          <nz-divider nzType="vertical"></nz-divider>
-          <a>Delete</a>
+          <span *ngFor="let size of product.sizes; let last = last">
+            {{ size }}<span *ngIf="!last">, </span>
+          </span>
+        </td>
+        <td>{{ product.categorie.nom || 'N/A' }}</td>
+        <td>
+          <span [class]="'badge ' + (product.status === 'ACTIF' ? 'bg-success' : 'bg-danger')">
+            {{ product.status }}
+          </span>
+        </td>
+        <td>{{ product.dateCreated | date:'short' }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-2" title="Modifier">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-danger me-2" 
+                  (click)="deleteProduct(product.id)" 
+                  title="Supprimer">
+            <i class="bi bi-trash"></i>
+          </button>
+          <button class="btn btn-sm btn-secondary" 
+                  (click)="deactivateProduct(product.id)" 
+                  title="Désactiver">
+            <i class="bi bi-x-circle"></i>
+          </button>
         </td>
       </tr>
-      <!-- Always keep <tbody> present, even if empty -->
-    </tbody>
-  </nz-table>
+      <tr *ngIf="filteredProducts.length === 0">
+        <td colspan="6" class="text-center">Aucun produit trouvé</td>
+      </tr>
+  </tbody>
+</table>
 </div>

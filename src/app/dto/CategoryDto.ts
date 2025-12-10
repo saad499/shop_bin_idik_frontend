@@ -1,6 +1,6 @@
 export interface CategoryDto {
   id?: number;
-  name: string;
+  nom: string;
   description?: string;
   isActive?: boolean;
 }
