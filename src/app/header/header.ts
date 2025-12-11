@@ -13,6 +13,9 @@ import { ProductDto } from '../dto/ProductDto';
 import { StatusProduct } from '../enum/StatusProduct';
 import { ProductService } from '../services/product/product.service';
 import { Subject, takeUntil } from 'rxjs';
+import { SizeDto } from '../dto/SizeDto';
+import { ColorDto } from '../dto/ColorDto';
+import { ImageDto } from '../dto/ImageDto';
 
 @Component({
   selector: 'app-header',
@@ -67,18 +70,41 @@ export class Header implements OnInit, OnDestroy {
     this.loadCategories();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+ngOnDestroy(): void {
+  this.destroy$.next();
+  this.destroy$.complete();
+}
 
-  // Product Methods
+parseSizes(input: string): SizeDto[] {
+  return input
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(sizeName => ({ sizeName }));
+}
+parseColors(): ColorDto[] {
+  if (!this.productColor) return [];
+  return [{
+    colorName: 'Custom Color',
+    colorCode: this.productColor 
+  }];
+}
+
+parseImages(): ImageDto[] {
+  return this.productImages.map(file => ({
+    imageUrl: file.preview || '',
+    imageData: file.preview || ''
+  }));
+}
+// Product Methods
   addProduct(): void {
     if (this.isAddingProduct) {
       return;
     }
     
     this.newProduct.sizes = this.parseSizes(this.sizesInput);
+    this.newProduct.colors = this.parseColors();
+    this.newProduct.images = this.parseImages();
     this.newProduct.categorieId = this.selectedValue!;
     this.isAddingProduct = true;
     
@@ -112,16 +138,7 @@ export class Header implements OnInit, OnDestroy {
   resetProductForm(): void {
     this.newProduct = this.getEmptyProduct();
     this.sizesInput = '';
-    this.productImages = [];
-    this.selectedValue = undefined;
     this.productColor = '#000000';
-  }
-
-  parseSizes(input: string): string[] {
-    return input
-      .split(',')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
   }
 
   onFilesSelected(event: Event): void {
@@ -235,6 +252,8 @@ export class Header implements OnInit, OnDestroy {
       description: '',
       prix: 0,
       sizes: [],
+      colors: [],
+      images: [],
       stock: 0,
       status: StatusProduct.ACTIF,
       categorieId: 0

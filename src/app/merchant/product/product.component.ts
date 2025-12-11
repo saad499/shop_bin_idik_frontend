@@ -8,6 +8,7 @@ import { ProductFullDto } from '../../dto/ProductFullDto';
 import { ProductService } from '../../services/product/product.service';
 import { debounceTime, distinctUntilChanged, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { ProductDto } from '../../dto/ProductDto';
+import { ColorDto } from '../../dto/ColorDto';
 
 @Component({
   selector: 'app-merchant-product',
@@ -24,6 +25,12 @@ export class MerchantProductComponent implements OnInit{
   searchTerm: string = '';
   isSearching: boolean = false;
   productActiveStatus: Map<number, boolean> = new Map();
+
+   // Pagination properties
+  currentPage: number = 1;
+  pageSize: number = 10;
+  totalPages: number = 0;
+  totalItems: number = 0;
 
   constructor(private productService: ProductService) {}
 
@@ -57,12 +64,16 @@ export class MerchantProductComponent implements OnInit{
       .subscribe({
         next: (data) => {
           this.filteredProducts = data;
+          this.currentPage = 1;
+          //this.updatePagination();
+          this.loadActiveStatus(data);
           this.isSearching = false;
         },
         error: (err) => {
           console.error('Error searching products:', err);
           this.isSearching = false;
           this.filteredProducts = this.products;
+          //this.updatePagination();
         }
       });
   }
@@ -109,10 +120,7 @@ export class MerchantProductComponent implements OnInit{
 
   
   getProductId(product: ProductFullDto | ProductDto): number {
-    if ('id' in product) {
-      return (product as ProductFullDto).id;
-    }
-    return 0;
+    return product.id || 0;
   }
   getCategorieName(product: ProductFullDto | ProductDto): string {
     if ('categorie' in product) {
@@ -126,6 +134,36 @@ export class MerchantProductComponent implements OnInit{
       return (product as ProductFullDto).dateCreated || new Date();
     }
     return new Date();
+  }
+
+  getSizes(product: ProductFullDto | ProductDto): string {
+  if (!product.sizes || product.sizes.length === 0) {
+    return 'N/A';
+  }
+  // Extract the 'size' property from each SizeDto object
+  return product.sizes.map(s => s.sizeName).join(', ');
+}
+
+  getColors(product: ProductFullDto | ProductDto): string[] {
+  if (!product.colors || product.colors.length === 0) {
+    return [];
+  }
+  // Extract the 'color' property from each ColorDto object
+  return product.colors.map(c => c.colorCode);
+}
+
+  getFirstImage(product: ProductFullDto | ProductDto): string {
+    if (!product.images || product.images.length === 0) {
+      return 'assets/images/no-image.png';
+    }
+    // Get the first image URL
+    return product.images[0].imageUrl || 'assets/images/no-image.png';
+  }
+  getColorObjects(product: ProductFullDto | ProductDto): ColorDto[] {
+    if (!product.colors || product.colors.length === 0) {
+      return [];
+    }
+    return product.colors;
   }
 
   searchProduct(searchTerm: string): void {
@@ -148,7 +186,8 @@ export class MerchantProductComponent implements OnInit{
 
   isProductActive(product: ProductFullDto | ProductDto): boolean {
     const id = this.getProductId(product);
-    return this.productActiveStatus.get(id) ?? false;
+  // Lire depuis la Map: si id=1 retourne true, si id=2 retourne false
+  return this.productActiveStatus.get(id) ?? false;
   }
 
   toggleProductStatus(id: number): void {
@@ -157,6 +196,9 @@ export class MerchantProductComponent implements OnInit{
       .subscribe({
         next: () => {
           // Reload products to get updated status
+          const currentStatus = this.productActiveStatus.get(id) ?? false;
+          this.productActiveStatus.set(id, !currentStatus);
+
           this.loadProducts();
           if (this.searchTerm) {
             this.searchSubject$.next(this.searchTerm);
