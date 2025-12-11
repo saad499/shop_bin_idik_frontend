@@ -1,17 +1,18 @@
 <header class="header">
-  <nav class="navbar navbar-expand-lg  w-100">
+  <nav class="navbar navbar-expand-lg w-100">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
         <img src="assets/images/logos.jpeg" alt="Logo" class="logo" />
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
             <a class="nav-link" (click)="openDrawer()" style="cursor:pointer;">
-              Ajouté <i class="bi bi-plus"></i>
+              Ajouter <i class="bi bi-plus"></i>
             </a>
           </li>
           <li class="nav-item">
@@ -27,8 +28,10 @@
       </div>
     </div>
   </nav>
-  </header>
-  <nz-drawer
+</header>
+
+<!-- Product Drawer -->
+<nz-drawer
   *ngIf="visible"
   [nzBodyStyle]="{ overflow: 'auto' }"
   [nzMaskClosable]="false"
@@ -36,129 +39,160 @@
   [nzVisible]="visible"
   nzTitle="Ajouter un produit"
   [nzFooter]="footerTpl"
-  (nzOnClose)="closeDrawer()"
->
-  <form nz-form *nzDrawerContent>
-    <div class="row flex-column flex-md-row">
-        <div class="col mb-3">
-            <label for="name_product">Nom du produit : </label>
-            <input nz-input placeholder="Produit" [(ngModel)]="newProduct.nom" [ngModelOptions]="{standalone: true}" />
+  (nzOnClose)="closeDrawer()">
+  
+  <div *nzDrawerContent>
+    <form nz-form>
+      <!-- Product Name and Price -->
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label for="name_product">Nom du produit *</label>
+          <input nz-input type="text" placeholder="Nom du produit" 
+                 [(ngModel)]="newProduct.nom" 
+                 [ngModelOptions]="{standalone: true}" 
+                 required />
         </div>
-        <div class="col mb-3">
-            <label for="price">Prix : </label>
-            <input nz-input placeholder="Produit" [(ngModel)]="newProduct.prix" [ngModelOptions]="{standalone: true}" />
-        </div>
-    </div>
-    <div class="form-group pt-1">
-        <label for="description">Description :</label>
-        <textarea class="form-control" [(ngModel)]="newProduct.description" [ngModelOptions]="{standalone: true}" id="description" rows="3"></textarea>
-    </div>
-    
-
-    <div class="row">
-        <div class="col-4">
-            <label for="category">Catégorie :</label>
-            <select 
-                class="form-select" 
-                [(ngModel)]="selectedValue" 
-                (ngModelChange)="onCategoryChange($event)"
-                [ngModelOptions]="{standalone: true}">
-                <option [ngValue]="null">Sélectionner une catégorie</option>
-                <option *ngFor="let cat of categories" [ngValue]="+cat.id">
-                    {{ cat.nom }}
-                </option>
-            </select>
-          <!--  <nz-select 
-            nzShowSearch 
-            nzAllowClear 
-            nzPlaceHolder="Sélectionner une catégorie" 
-            [(ngModel)]="selectedValue"
-            (ngModelChange)="onCategoryChange($event)"
-            [ngModelOptions]="{standalone: true}"
-            class="w-100">
-            <nz-option 
-              *ngFor="let cat of categories" 
-              [nzLabel]="cat.nom" 
-              [nzValue]="cat.id">
-            </nz-option>
-          </nz-select>
-          <nz-select [(ngModel)]="singleValue" [nzSize]="size" nzShowSearch name="cat">
-            @for (option of listOfOption; track option) {
-              <nz-option [nzLabel]="option" [nzValue]="option"></nz-option>
-            }
-          </nz-select>-->
-          <small class="text-muted">Sélectionné: {{ selectedValue || 'Aucune' }} (Type: {{ typeof selectedValue }})</small>
-        </div>
-        <div class="col-1 d-flex align-items-center justify-content-center">
-          <i class="bi bi-pencil mt-1" 
-             style="font-size: 1.5rem;" 
-             [style.cursor]="selectedValue ? 'pointer' : 'not-allowed'"
-             [style.opacity]="selectedValue ? '1' : '0.3'"
-             (click)="editSelectedCategory()"></i>
-        </div>
-        <div class="col-1 d-flex align-items-center justify-content-center">
-          <i class="bi bi-plus mt-1" style="font-size: 2.5rem; cursor: pointer;" (click)="openCategoryDrawer()"></i>
-        </div>
-        <div class="col-6">
-            <label for="description">Stock disponible :</label>
-            <input nz-input placeholder="Produit" [(ngModel)]="newProduct.stock" [ngModelOptions]="{standalone: true}" />
-        </div>
-        <div class="col-12 mb-3 mt-3">
-      <label for="sizes">Tailles disponibles :</label>
-      <input type="text" 
-             class="form-control" 
-             placeholder="Ex: S, M, L, XL (séparés par des virgules)" 
-             [(ngModel)]="sizesInput" 
-             [ngModelOptions]="{standalone: true}">
-      <small class="text-muted">Entrez les tailles séparées par des virgules</small>
-    </div>
-    </div>
-
-    <div class="col-12 mb-3">
-      <label for="productImages">Images du produit :</label>
-      <input type="file" id="productImages" class="form-control" multiple accept="image/*" (change)="onFilesSelected($event)">
-      <div class="mt-2" *ngIf="productImages.length">
-        <div *ngFor="let file of productImages" class="mb-1">
-          <span>{{ file.name }}</span>
-          <img *ngIf="file.preview" [src]="file.preview" alt="preview" style="max-width: 100px; max-height: 100px; display: block; margin-top: 4px;" />
+        <div class="col-12 col-md-6 mb-3">
+          <label for="price">Prix (MAD) *</label>
+          <input nz-input type="number" min="0" step="0.01" placeholder="0.00" 
+                 [(ngModel)]="newProduct.prix" 
+                 [ngModelOptions]="{standalone: true}" 
+                 required />
         </div>
       </div>
-    </div>
-    <div class="col-12 mb-3">
-      <label for="productColor">Couleur du produit :</label>
-      <input type="color" id="productColor" class="form-control form-control-color" [(ngModel)]="productColor" [ngModelOptions]="{standalone: true}" style="width: 60px; height: 40px; padding: 2px;">
-    </div>
-  </form>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description" rows="3" 
+                  placeholder="Description du produit"
+                  [(ngModel)]="newProduct.description" 
+                  [ngModelOptions]="{standalone: true}"></textarea>
+      </div>
+
+      <!-- Category and Stock -->
+      <div class="row">
+        <div class="col-12 col-md-4 mb-3">
+          <label for="category">Catégorie *</label>
+          <select
+            class="form-select"
+            [ngModel]="selectedValue"
+            (ngModelChange)="onCategoryChange($event)"
+            [ngModelOptions]="{standalone: true}"
+          >
+            <option value="">Sélectionner une catégorie</option>
+
+            <option *ngFor="let cat of categories" [value]="cat.id">
+                {{ cat.nom }}
+            </option>
+          </select>
+          <small class="text-muted">Debug: {{ selectedValue }}</small>
+        </div>
+        
+        <div class="col-auto d-flex align-items-center mb-3">
+          <button type="button" class="btn btn-outline-secondary me-2" 
+                  [disabled]="!selectedValue"
+                  (click)="editSelectedCategory()"
+                  title="Modifier la catégorie">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button type="button" class="btn btn-outline-primary" 
+                  (click)="openCategoryDrawer()"
+                  title="Ajouter une catégorie">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+
+        <div class="col-12 col-md mb-3">
+          <label for="stock">Stock disponible *</label>
+          <input nz-input type="number" min="0" placeholder="0" 
+                 [(ngModel)]="newProduct.stock" 
+                 [ngModelOptions]="{standalone: true}" 
+                 required />
+        </div>
+      </div>
+
+      <!-- Sizes -->
+      <div class="mb-3">
+        <label for="sizes">Tailles disponibles</label>
+        <input type="text" class="form-control" 
+               placeholder="Ex: S, M, L, XL" 
+               [(ngModel)]="sizesInput" 
+               [ngModelOptions]="{standalone: true}">
+        <small class="text-muted">Séparez les tailles par des virgules</small>
+      </div>
+
+      <!-- Images -->
+      <div class="mb-3">
+        <label for="productImages">Images du produit</label>
+        <input type="file" id="productImages" class="form-control" 
+               multiple accept="image/*" 
+               (change)="onFilesSelected($event)">
+        <div class="mt-2 d-flex flex-wrap gap-2" *ngIf="productImages.length">
+          <div *ngFor="let file of productImages" class="position-relative">
+            <img [src]="file.preview" alt="preview" 
+                 class="rounded border" 
+                 style="width: 100px; height: 100px; object-fit: cover;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Color -->
+      <div class="mb-3">
+        <label for="productColor">Couleur du produit</label>
+        <input type="color" id="productColor" class="form-control form-control-color" 
+               [(ngModel)]="productColor" 
+               [ngModelOptions]="{standalone: true}" 
+               style="width: 60px; height: 40px;">
+      </div>
+    </form>
+  </div>
+
   <ng-template #footerTpl>
-    <div style="float: right">
-      <button nz-button style="margin-right: 8px;" (click)="closeDrawer()">Annuler</button>
-      <button nz-button nzType="primary" (click)="addProduct()">Ajouter</button>
+    <div class="d-flex justify-content-end gap-2">
+      <button nz-button (click)="closeDrawer()" [disabled]="isAddingProduct">
+        Annuler
+      </button>
+      <button nz-button nzType="primary" 
+              (click)="addProduct()" 
+              [disabled]="isAddingProduct" 
+              [nzLoading]="isAddingProduct">
+        Ajouter
+      </button>
     </div>
   </ng-template>
 </nz-drawer>
 
-<!--add category-->
-
+<!-- Category Drawer -->
 <nz-drawer 
-*ngIf="categoryDrawerVisible"
+  *ngIf="categoryDrawerVisible"
   [nzVisible]="categoryDrawerVisible"
-  nzTitle="Ajouter une catégorie"
+  [nzTitle]="selectedCategory ? 'Modifier la catégorie' : 'Ajouter une catégorie'"
   [nzWidth]="400"
-  (nzOnClose)="closeCategoryDrawer()"
->
+  (nzOnClose)="closeCategoryDrawer()">
+  
   <form nz-form *nzDrawerContent>
     <div class="mb-3">
-      <label for="categoryName" class="form-label">Nom de la catégorie</label>
-      <input id="categoryName" class="form-control" [(ngModel)]="newCategory.nom" name="categoryName" />
+      <label for="categoryName" class="form-label">Nom *</label>
+      <input id="categoryName" class="form-control" 
+             [(ngModel)]="newCategory.nom" 
+             [ngModelOptions]="{standalone: true}"
+             required />
     </div>
     <div class="mb-3">
       <label for="categoryDescription" class="form-label">Description</label>
-      <textarea id="categoryDescription" class="form-control" [(ngModel)]="newCategory.description" name="categoryDescription"></textarea>
+      <textarea id="categoryDescription" class="form-control" rows="3"
+                [(ngModel)]="newCategory.description" 
+                [ngModelOptions]="{standalone: true}"></textarea>
     </div>
-    <button nz-button nzType="primary" (click)="saveCategory()" [disabled]="isAddingCategory" [nzLoading]="isAddingCategory">
+    <button 
+    nz-button 
+    type="button"
+    nzType="primary" 
+            (click)="saveCategory($event)" 
+            [disabled]="isAddingCategory || !newCategory.nom" 
+            [nzLoading]="isAddingCategory">
       {{ selectedCategory ? 'Modifier' : 'Ajouter' }}
     </button>
   </form>
-  
 </nz-drawer>
-

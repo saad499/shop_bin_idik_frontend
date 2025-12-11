@@ -1,121 +1,236 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule, NgFor } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzSelectModule, NzSelectSizeType } from 'ng-zorro-antd/select';
-import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { CategoryFullDto } from '../dto/CategoryFullDto';
 import { CategoryService } from '../services/category/category.service';
 import { CategoryDto } from '../dto/CategoryDto';
 import { ProductDto } from '../dto/ProductDto';
 import { StatusProduct } from '../enum/StatusProduct';
 import { ProductService } from '../services/product/product.service';
-  function alphabet(): string[] {
-  const children: string[] = [];
-  for (let i = 10; i < 36; i++) {
-    children.push(i.toString(36) + i);
-  }
-  return children;
-}
+import { Subject, takeUntil } from 'rxjs';
+
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzIconModule, NzDrawerModule, NzButtonModule, NzFormModule, NzInputModule, NzSelectModule, NzDatePickerModule, NgFor],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    NzIconModule, 
+    NzDrawerModule, 
+    NzButtonModule, 
+    NzFormModule, 
+    NzInputModule
+  ],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
+export class Header implements OnInit, OnDestroy {
 
-export class Header implements OnInit {
-  
-readonly listOfOption: string[] = alphabet();
-  size: NzSelectSizeType = 'default';
-  singleValue = 'a10';
-  multipleValue = ['a10', 'c12'];
-  tagValue = ['a10', 'c12', 'tag'];
-
-
-
-  visible = false;
-  selectedValue: number | undefined = undefined;
-  value: string = '';
-  productImages: any[] = [];
-  productColor: string = '#000000';
-  categories: CategoryFullDto[] = [];
-  selectedCategory: any = null;
-  categoryDrawerVisible = false;
-  newCategory: CategoryDto = { nom: '', description: '', isActive: true  };
-  isAddingCategory = false;
-  isAddingProduct = false;
-
-  newProduct: ProductDto = {
-    nom: '',
-    description: '',
-    prix: 0,
-    sizes: [],
-    stock: 0,
-    status: StatusProduct.ACTIF,
-    categorieId: 0
+  compareFn = (o1: any, o2: any): boolean => {
+    return o1 === o2;
   };
+  private destroy$ = new Subject<void>();
+  
+  // Drawer states
+  visible = false;
+  categoryDrawerVisible = false;
+  
+  // Loading states
+  isAddingProduct = false;
+  isAddingCategory = false;
+  
+  // Form data
+  selectedValue: number | undefined = undefined;
+  productImages: Array<File & { preview?: string }> = [];
+  productColor: string = '#000000';
   sizesInput: string = '';
+  
+  newProduct: ProductDto = this.getEmptyProduct();
+  
+  // Categories
+  categories: CategoryFullDto[] = [];
+  selectedCategory: CategoryFullDto | null = null;
+  newCategory: CategoryDto = this.getEmptyCategory();
   
   constructor(
     private categoryService: CategoryService, 
     private productService: ProductService,
-    private cdr: ChangeDetectorRef) {}    
-
+    private cdr: ChangeDetectorRef
+  ) {}    
 
   ngOnInit(): void {
-    this.categoryService.getAllCategoriesFull().subscribe(data => {
-    this.categories = data;
-    console.log('Fetched categories:', this.categories);
-  });
+    this.loadCategories();
   }
 
-  onCategorySelect(value: number): void {
-    console.log('Category selected:', value);
-    this.selectedValue = value;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  // Product Methods
   addProduct(): void {
-    if (this.isAddingProduct) return;
+    if (this.isAddingProduct) {
+      return;
+    }
     
-    // Parse sizes from comma-separated input
-    this.newProduct.sizes = this.sizesInput
+    this.newProduct.sizes = this.parseSizes(this.sizesInput);
+    this.newProduct.categorieId = this.selectedValue!;
+    this.isAddingProduct = true;
+    
+    this.productService.create(this.newProduct)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          alert('Produit ajouté avec succès!');
+          this.closeDrawer();
+          this.resetProductForm();
+        },
+        error: (err) => {
+          console.error('Error adding product:', err);
+          alert('Erreur lors de l\'ajout du produit');
+        },
+        complete: () => {
+          this.isAddingProduct = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  validateProduct(): boolean {
+    if (!this.newProduct.nom || !this.newProduct.prix || !this.selectedValue || !this.newProduct.stock) {
+      alert('Veuillez remplir tous les champs obligatoires (*)');
+      return false;
+    }
+    return true;
+  }
+
+  resetProductForm(): void {
+    this.newProduct = this.getEmptyProduct();
+    this.sizesInput = '';
+    this.productImages = [];
+    this.selectedValue = undefined;
+    this.productColor = '#000000';
+  }
+
+  parseSizes(input: string): string[] {
+    return input
       .split(',')
       .map(s => s.trim())
       .filter(s => s.length > 0);
-    
-    this.newProduct.categorieId = this.selectedValue || 0;
-    
-    this.isAddingProduct = true;
-    this.cdr.detectChanges();
-    
-    // Call ProductService to create product
-    this.productService.create(this.newProduct).subscribe({
-      next: (result) => {
-        console.log('Product created successfully:', result);
-        this.isAddingProduct = false;
-        this.closeDrawer();
-        this.resetProductForm();
-        this.cdr.detectChanges();
-        // Optionally show success message
-        alert('Produit ajouté avec succès!');
+  }
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.productImages = Array.from(input.files).map(file => {
+        const fileWithPreview = file as File & { preview?: string };
+        const reader = new FileReader();
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          fileWithPreview.preview = e.target?.result as string;
+          this.cdr.detectChanges();
+        };
+        reader.readAsDataURL(file);
+        return fileWithPreview;
+      });
+    }
+  }
+
+  // Category Methods
+  loadCategories(): void {
+    this.categoryService.getAllCategoriesFull()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.categories = data;
+          console.log('Categories loaded:', this.categories);
+        },
+        error: (err) => console.error('Error loading categories:', err)
+      });
+  }
+
+  saveCategory(event?: Event): void {
+    if (event) event.preventDefault();
+    if (this.isAddingCategory || !this.newCategory.nom) {
+      return;
+    }
+
+    this.isAddingCategory = true;
+    const request = this.selectedCategory
+      ? this.categoryService.update(this.selectedCategory.id, this.newCategory)
+      : this.categoryService.create(this.newCategory);
+
+    request.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.loadCategories();
+        this.closeCategoryDrawer();
       },
-      error: (err: any) => {
-        console.error('Error adding product:', err);
-        this.isAddingProduct = false;
-        this.cdr.detectChanges();
-        alert('Erreur lors de l\'ajout du produit');
+      error: (err) => {
+        console.error('Error saving category:', err);
+        alert('Erreur lors de la sauvegarde');
+      },
+      complete: () => {
+        setTimeout(() => {
+          this.isAddingCategory = false;
+          this.cdr.detectChanges();
+        }, 0);
       }
     });
   }
 
-  resetProductForm(): void {
-    this.newProduct = {
+  editSelectedCategory(): void {
+    if (!this.selectedValue) return;
+    
+    const category = this.categories.find(cat => cat.id === this.selectedValue);
+    if (category) {
+      this.selectedCategory = category;
+      this.newCategory = { 
+        id: category.id,
+        nom: category.nom, 
+        description: category.description || '', 
+        isActive: category.isActive 
+      };
+      this.categoryDrawerVisible = true;
+    }
+  }
+
+  // Drawer Methods
+  openDrawer(): void {
+    this.visible = true;
+  }
+
+  closeDrawer(): void {
+    this.visible = false;
+    this.resetProductForm();
+  }
+
+  openCategoryDrawer(): void {
+    this.categoryDrawerVisible = true;
+    this.selectedCategory = null;
+    this.newCategory = this.getEmptyCategory();
+  }
+
+  closeCategoryDrawer(): void {
+    this.categoryDrawerVisible = false;
+    this.selectedCategory = null;
+    this.newCategory = this.getEmptyCategory();
+  }
+
+  // Utility Methods
+  getDrawerWidth(): number | string {
+    if (typeof window === 'undefined') return 600;
+    if (window.innerWidth < 576) return '100vw';
+    if (window.innerWidth < 768) return '90vw';
+    if (window.innerWidth < 992) return '70vw';
+    return 600;
+  }
+
+  private getEmptyProduct(): ProductDto {
+    return {
       nom: '',
       description: '',
       prix: 0,
@@ -124,168 +239,31 @@ readonly listOfOption: string[] = alphabet();
       status: StatusProduct.ACTIF,
       categorieId: 0
     };
-    this.sizesInput = '';
-    this.productImages = [];
-    this.selectedValue = undefined;
   }
 
-  openDrawer(): void {
-    console.log('Opening drawer, visible before:', this.visible);
-    this.visible = true;
-    console.log('Opening drawer, visible after:', this.visible);
-     setTimeout(() => {
-      this.visible = true;
-    }, 0);
-  }
-
-
-  closeDrawer(): void {
-    this.visible = false;
-    this.cdr.detectChanges();
-  }
-
-  
-
-  onFilesSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.productImages = Array.from(input.files).map(file => {
-        const fileWithPreview: any = file;
-        const reader = new FileReader();
-        reader.onload = (e: any) => fileWithPreview.preview = e.target.result;
-        reader.readAsDataURL(file);
-        return fileWithPreview;
-      });
-    }
-  }
-
-  openCategoryDrawer(): void {
-      this.categoryDrawerVisible = true;
-      this.selectedCategory = null; 
-      this.newCategory = { nom: '', description: '', isActive: true };
-  }
-  
-  onEditCategory(cat: CategoryFullDto): void {
-    this.selectedCategory = cat;
-    this.newCategory = { 
-      id: cat.id,
-      nom: cat.nom, 
-      description: cat.description || '', 
-      isActive: cat.isActive 
+  private getEmptyCategory(): CategoryDto {
+    return { 
+      nom: '', 
+      description: '', 
+      isActive: true 
     };
-    this.categoryDrawerVisible = true;
   }
 
-  closeCategoryDrawer() {
-    this.categoryDrawerVisible = false;
-    this.selectedCategory = null;
-  }
-
-  addCategory(): void {
-  if (this.isAddingCategory) return;
-  this.isAddingCategory = true;
-  this.cdr.detectChanges();
-  
-  this.categoryService.create(this.newCategory).subscribe({
-    next: (result) => {
-      this.isAddingCategory = false;
-      this.categoryDrawerVisible = false;
-      this.newCategory = { nom: '', description: '', isActive: true };
-      this.cdr.detectChanges();
-      this.categoryService.getAllCategoriesFull().subscribe(data => {
-        this.categories = data;
-        this.cdr.detectChanges();
-      });
-    },
-    error: (err) => {
-      console.error('Error adding category:', err);
-      this.isAddingCategory = false;
-      this.cdr.detectChanges();
+  onCategoryChange(categoryId: any): void {
+    console.log("categoryId reçu:", categoryId, "type:", typeof categoryId);
+    if (!categoryId) {
+      this.selectedValue = undefined;
+      return;
     }
-  });
-}
-  getActiveCategory() {
-  this.categoryService.getByIsActive(true).subscribe({
-    next: (category) => {
-      this.selectedCategory = category;
-      console.log('Active Category:', this.selectedCategory);
-    },
-    error: (err) => {
-      // Handle error
+
+    const numericId = Number(categoryId);
+
+    if (isNaN(numericId)) {
+      this.selectedValue = undefined;
+      return;
     }
-  });
-}
 
-updateCategory(): void {
-  if (this.isAddingCategory || !this.newCategory.id) return;
-  this.isAddingCategory = true;
-  this.cdr.detectChanges();
-
-  this.categoryService.update(this.newCategory.id, this.newCategory).subscribe({
-    next: () => {
-      this.isAddingCategory = false;
-      this.categoryDrawerVisible = false;
-      this.selectedCategory = null;
-      this.newCategory = { nom: '', description: '', isActive: true };
-      this.cdr.detectChanges();
-
-      this.categoryService.getAllCategoriesFull().subscribe(data => {
-        this.categories = data;
-        this.cdr.detectChanges();
-      });
-    },
-    error: (err) => {
-      console.error('Error updating category:', err);
-      this.isAddingCategory = false;
-      this.cdr.detectChanges();
-    }
-  });
-}
-
-saveCategory(): void {
-  if (this.selectedCategory) {
-    this.updateCategory();
-  } else {
-    this.addCategory();
+    this.selectedValue = numericId;
+    console.log("→ ID sélectionné:", this.selectedValue);
   }
-}
-
-editSelectedCategory(): void {
-  console.log('selectedValue:', this.selectedValue);
-  console.log('selectedValue type:', typeof this.selectedValue);
-  console.log('categories:', this.categories);
-  
-  if (this.selectedValue === null || this.selectedValue === undefined) {
-    console.log('No category selected');
-    return;
-  }
-  
-  console.log('Looking for category with id:', this.selectedValue);
-  const categoryToEdit = this.categories.find(cat => {
-    console.log('Comparing cat.id:', cat.id, 'typeof:', typeof cat.id, 'with selectedValue:', this.selectedValue, 'typeof:', typeof this.selectedValue);
-    return cat.id === this.selectedValue;
-  });
-  console.log('Found category:', categoryToEdit);
-  
-  if (categoryToEdit) {
-    this.onEditCategory(categoryToEdit);
-  } else {
-    console.log('Category not found in list');
-  }
-}
-
-getDrawerWidth(): number | string {
-  if (typeof window !== 'undefined') {
-    if (window.innerWidth < 576) return '100vw';
-    if (window.innerWidth < 768) return '90vw';
-    if (window.innerWidth < 992) return '70vw';
-  }
-  return 600;
-}
-
-
-onCategoryChange(value: any): void {
-  this.selectedValue = value ? Number(value) : undefined;
-}
-
 }
