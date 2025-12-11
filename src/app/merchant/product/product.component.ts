@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductFullDto } from '../../dto/ProductFullDto';
 import { ProductService } from '../../services/product/product.service';
-import { debounceTime, distinctUntilChanged, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { ProductDto } from '../../dto/ProductDto';
 
 @Component({
@@ -23,6 +23,7 @@ export class MerchantProductComponent implements OnInit{
   filteredProducts: (ProductFullDto | ProductDto)[] = [];
   searchTerm: string = '';
   isSearching: boolean = false;
+  productActiveStatus: Map<number, boolean> = new Map();
 
   constructor(private productService: ProductService) {}
 
@@ -71,10 +72,13 @@ export class MerchantProductComponent implements OnInit{
   }
 
   loadProducts(): void {
-    this.productService.getAllProductsFull().subscribe({
+    this.productService.getAllProductsFull()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
       next: (data) => {
         this.products = data;
         this.filteredProducts = data;
+        this.loadActiveStatus(data);
       },
       error: (err) => {
         console.error('Error loading products:', err);
@@ -82,6 +86,28 @@ export class MerchantProductComponent implements OnInit{
     });
   }
 
+  loadActiveStatus(products: (ProductFullDto | ProductDto)[]): void {
+    const requests = products.map(product => {
+      const id = this.getProductId(product);
+      return this.productService.getIsActive(id);
+    });
+
+    forkJoin(requests)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (statuses) => {
+          products.forEach((product, index) => {
+            const id = this.getProductId(product);
+            this.productActiveStatus.set(id, statuses[index]);
+          });
+        },
+        error: (err) => {
+          console.error('Error loading active status:', err);
+        }
+      });
+  }
+
+  
   getProductId(product: ProductFullDto | ProductDto): number {
     if ('id' in product) {
       return (product as ProductFullDto).id;
@@ -118,6 +144,31 @@ export class MerchantProductComponent implements OnInit{
     );
     
     this.isSearching = false;
+  }
+
+  isProductActive(product: ProductFullDto | ProductDto): boolean {
+    const id = this.getProductId(product);
+    return this.productActiveStatus.get(id) ?? false;
+  }
+
+  toggleProductStatus(id: number): void {
+    this.productService.deactivate(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // Reload products to get updated status
+          this.loadProducts();
+          if (this.searchTerm) {
+            this.searchSubject$.next(this.searchTerm);
+          }
+        },
+        error: (err) => {
+          console.error('Error toggling product status:', err);
+          alert('Erreur lors du changement de statut du produit');
+          // Reload to revert the checkbox state
+          this.loadProducts();
+        }
+      });
   }
 
   deleteProduct(id: number): void {

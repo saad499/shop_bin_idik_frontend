@@ -34,9 +34,15 @@
         </td>
         <td>{{ getCategorieName(product) }}</td>
         <td>
-          <span [class]="'badge ' + (product.status === 'ACTIF' ? 'bg-success' : 'bg-danger')">
-            {{ product.status }}
-          </span>
+          <div class="form-check form-switch">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              id="'flexSwitchCheckChecked-' + i"
+              [checked]="isProductActive(product)"
+              (change)="toggleProductStatus(getProductId(product))"
+              role="switch">
+          </div>
         </td>
         <td>{{ getDateCreated(product) | date:'short' }}</td>
         <td>

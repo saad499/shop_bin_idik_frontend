@@ -20,8 +20,14 @@ export class ProductService {
     });
   }
 
+  getIsActive(id: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/is-active`, {
+      params: { id: id.toString() }
+    });
+  }
+  
   deactivate(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/deactivate`, null, { 
+    return this.http.post(`${this.apiUrl}/activate-desactivate`, null, { 
       params: new HttpParams().set('id', id) 
     });
   }
