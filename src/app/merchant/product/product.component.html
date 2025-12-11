@@ -1,7 +1,12 @@
 <div class=" class container p-5">
   <div class="row mb-3">
     <div class="col-md-4 offset-md-8 d-flex justify-content-end">
-      <input type="text" class="form-control w-auto" placeholder="Rechercher un produit...">
+      <input 
+        type="text" 
+        class="form-control w-auto" 
+        placeholder="Rechercher un produit..." 
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange($event)"/>
     </div>
   </div>
   <table class="table">
@@ -27,24 +32,24 @@
             {{ size }}<span *ngIf="!last">, </span>
           </span>
         </td>
-        <td>{{ product?.categorie?.nom || 'N/A' }}</td>
+        <td>{{ getCategorieName(product) }}</td>
         <td>
           <span [class]="'badge ' + (product.status === 'ACTIF' ? 'bg-success' : 'bg-danger')">
             {{ product.status }}
           </span>
         </td>
-        <td>{{ product.dateCreated | date:'short' }}</td>
+        <td>{{ getDateCreated(product) | date:'short' }}</td>
         <td>
           <button class="btn btn-sm btn-warning me-2" title="Modifier">
             <i class="bi bi-pencil"></i>
           </button>
           <button class="btn btn-sm btn-danger me-2" 
-                  (click)="deleteProduct(product.id)" 
+                  (click)="deleteProduct(getProductId(product))" 
                   title="Supprimer">
             <i class="bi bi-trash"></i>
           </button>
           <button class="btn btn-sm btn-secondary" 
-                  (click)="deactivateProduct(product.id)" 
+                  (click)="deactivateProduct(getProductId(product))" 
                   title="Désactiver">
             <i class="bi bi-x-circle"></i>
           </button>

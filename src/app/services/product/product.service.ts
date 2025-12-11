@@ -53,4 +53,10 @@ export class ProductService {
       params: new HttpParams().set('id', id) 
     });
   }
+
+  searchProducts(searchTerm: string): Observable<ProductDto[]> {
+    return this.http.get<ProductDto[]>(`${this.apiUrl}/search`, {
+      params: { searchTerm }
+    });
+  }
 }
