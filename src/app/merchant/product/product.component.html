@@ -105,7 +105,6 @@
   </div>
 </div>
 
-
 <!-- Edit Product Drawer -->
 <nz-drawer
   *ngIf="editDrawerVisible"
@@ -116,10 +115,8 @@
   nzTitle="Modifier le produit"
   [nzFooter]="editFooterTpl"
   (nzOnClose)="closeEditDrawer()">
-  
   <div *nzDrawerContent>
     <form>
-      <!-- Product Name and Price -->
       <div class="row">
         <div class="col-12 col-md-6 mb-3">
           <label>Nom du produit *</label>
@@ -134,16 +131,12 @@
                  name="prix" />
         </div>
       </div>
-
-      <!-- Description -->
       <div class="mb-3">
         <label>Description</label>
         <textarea class="form-control" rows="3"
                   [(ngModel)]="editingProduct.description" 
                   name="description"></textarea>
       </div>
-
-      <!-- Category and Stock -->
       <div class="row">
         <div class="col-12 col-md-6 mb-3">
           <label>Catégorie *</label>
@@ -162,8 +155,6 @@
                  name="stock" />
         </div>
       </div>
-
-      <!-- Sizes -->
       <div class="mb-3">
         <label>Tailles disponibles</label>
         <div class="input-group mb-2">
@@ -185,8 +176,6 @@
           </span>
         </div>
       </div>
-
-      <!-- Colors -->
       <div class="mb-3">
         <label>Couleurs du produit</label>
         <div class="input-group mb-2">
@@ -215,8 +204,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Images -->
       <div class="mb-3">
         <label>Images du produit</label>
         <input type="file" class="form-control" 
@@ -235,8 +222,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Status -->
       <div class="mb-3">
         <label>Statut</label>
         <select class="form-select"
@@ -246,7 +231,6 @@
           <option value="INACTIF">Inactif</option>
         </select>
       </div>
-
       <div class="mb-3">
         <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" 
@@ -259,7 +243,6 @@
       </div>
     </form>
   </div>
-
   <ng-template #editFooterTpl>
     <div class="d-flex justify-content-end gap-2">
       <button class="btn btn-secondary" 

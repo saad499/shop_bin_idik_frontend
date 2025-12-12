@@ -83,10 +83,8 @@ export class MerchantProductComponent implements OnInit{
         switchMap(term => {
           this.isSearching = true;
           if (!term || term.trim() === '') {
-            // If empty, return all products
             return this.productService.getAllProductsFull(this.currentPage, this.pageSize);
           } else {
-            // Call backend search API
             return this.productService.searchProducts(term, this.currentPage, this.pageSize);
           }
         }),
@@ -166,7 +164,6 @@ export class MerchantProductComponent implements OnInit{
         id: img.id
       }))
     : [];
-  
     console.log('Editing product data:', this.editingProduct);
     this.editDrawerVisible = true;
     this.cdr.detectChanges();
@@ -192,10 +189,10 @@ export class MerchantProductComponent implements OnInit{
       alert('Veuillez sélectionner une catégorie');
       return;
     }
+
     this.editingProduct.images = this.parseImages();
     this.isUpdating = true;
     this.cdr.detectChanges();
-
     this.productService.update(this.editingProduct.id, this.editingProduct)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -249,7 +246,6 @@ export class MerchantProductComponent implements OnInit{
 
   removeSize(index: number): void {
     const size = this.editingProduct.sizes[index];
-
     if (size.id) {
       if (confirm('Êtes-vous sûr de vouloir supprimer cette taille?')) {
         this.sizeService.deleteSize(size.id)
@@ -266,7 +262,6 @@ export class MerchantProductComponent implements OnInit{
           });
       }
     } else {
-      // New size not yet saved - just remove from array
       this.editingProduct.sizes.splice(index, 1);
     }
   }
@@ -293,8 +288,6 @@ export class MerchantProductComponent implements OnInit{
 
   removeColor(index: number): void {
     const color = this.editingProduct.colors[index];
-    
-    // If the color has an ID, it exists in the database - call API
     if (color.id) {
       if (confirm('Êtes-vous sûr de vouloir supprimer cette couleur?')) {
         this.colorService.deleteColor(color.id)
@@ -311,7 +304,6 @@ export class MerchantProductComponent implements OnInit{
           });
       }
     } else {
-      // New color not yet saved - just remove from array
       this.editingProduct.colors.splice(index, 1);
     }
   }
@@ -334,8 +326,6 @@ export class MerchantProductComponent implements OnInit{
 
   removeImage(index: number): void {
     const image = this.productImages[index];
-    
-    // If the image has an ID, it exists in the database - call API
     if (image.id) {
       if (confirm('Êtes-vous sûr de vouloir supprimer cette image?')) {
         this.imageService.deleteImage(image.id)
@@ -343,7 +333,6 @@ export class MerchantProductComponent implements OnInit{
           .subscribe({
             next: () => {
               this.productImages.splice(index, 1);
-              // Also remove from editingProduct.images
               const imgIndex = this.editingProduct.images.findIndex(img => img.id === image.id);
               if (imgIndex !== -1) {
                 this.editingProduct.images.splice(imgIndex, 1);
@@ -356,7 +345,6 @@ export class MerchantProductComponent implements OnInit{
           });
       }
     } else {
-      // New image not yet saved - just remove from array
       this.productImages.splice(index, 1);
     }
   }
@@ -386,7 +374,6 @@ export class MerchantProductComponent implements OnInit{
   updatePagination(): void {
     this.totalItems = this.filteredProducts.length;
     this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-    
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.paginatedProducts = this.filteredProducts.slice(startIndex, endIndex);
@@ -428,18 +415,14 @@ export class MerchantProductComponent implements OnInit{
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxPagesToShow = 5;
-    
     let startPage = Math.max(0, this.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(this.totalPages - 1, startPage + maxPagesToShow - 1);
-    
     if (endPage - startPage < maxPagesToShow - 1) {
       startPage = Math.max(0, endPage - maxPagesToShow + 1);
     }
-    
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
     return pages;
   }
 
@@ -447,12 +430,10 @@ export class MerchantProductComponent implements OnInit{
     if (products.length === 0) {
       return;
     }
-
     const requests = products.map(product => {
       const id = this.getProductId(product);
       return this.productService.getIsActive(id);
     });
-
     forkJoin(requests)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -468,10 +449,10 @@ export class MerchantProductComponent implements OnInit{
       });
   }
 
-  
   getProductId(product: ProductFullDto | ProductDto): number {
     return product.id || 0;
   }
+
   getCategorieName(product: ProductFullDto | ProductDto): string {
     if ('categorie' in product) {
       return (product as ProductFullDto).categorie?.nom || 'N/A';
@@ -490,23 +471,20 @@ export class MerchantProductComponent implements OnInit{
   if (!product.sizes || product.sizes.length === 0) {
     return 'N/A';
   }
-  // Extract the 'size' property from each SizeDto object
   return product.sizes.map(s => s.sizeName).join(', ');
 }
 
   getColors(product: ProductFullDto | ProductDto): string[] {
-  if (!product.colors || product.colors.length === 0) {
-    return [];
+    if (!product.colors || product.colors.length === 0) {
+      return [];
+    }
+    return product.colors.map(c => c.colorCode);
   }
-  // Extract the 'color' property from each ColorDto object
-  return product.colors.map(c => c.colorCode);
-}
 
   getFirstImage(product: ProductFullDto | ProductDto): string {
     if (!product.images || product.images.length === 0) {
       return 'assets/images/no-image.png';
     }
-    // Get the first image URL
     return product.images[0].imageUrl || 'assets/images/no-image.png';
   }
   getColorObjects(product: ProductFullDto | ProductDto): ColorDto[] {
@@ -522,22 +500,18 @@ export class MerchantProductComponent implements OnInit{
       this.isSearching = false;
       return;
     }
-
     this.isSearching = true;
     const term = searchTerm.toLowerCase();
-    
     this.filteredProducts = this.products.filter(p => 
       p.nom.toLowerCase().includes(term) ||
       ('categorie' in p && p.categorie?.nom?.toLowerCase().includes(term))
     );
-    
     this.isSearching = false;
   }
 
   isProductActive(product: ProductFullDto | ProductDto): boolean {
     const id = this.getProductId(product);
-  // Lire depuis la Map: si id=1 retourne true, si id=2 retourne false
-  return this.productActiveStatus.get(id) ?? false;
+    return this.productActiveStatus.get(id) ?? false;
   }
 
   toggleProductStatus(id: number): void {
@@ -545,10 +519,8 @@ export class MerchantProductComponent implements OnInit{
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload products to get updated status
           const currentStatus = this.productActiveStatus.get(id) ?? false;
           this.productActiveStatus.set(id, !currentStatus);
-
           this.loadProducts();
           if (this.searchTerm) {
             this.searchSubject$.next(this.searchTerm);
@@ -557,7 +529,6 @@ export class MerchantProductComponent implements OnInit{
         error: (err) => {
           console.error('Error toggling product status:', err);
           alert('Erreur lors du changement de statut du produit');
-          // Reload to revert the checkbox state
           this.loadProducts();
         }
       });
@@ -584,9 +555,5 @@ export class MerchantProductComponent implements OnInit{
         console.error('Error deactivating product:', err);
       }
     });
-  }
-
-  editProduct(product: ProductFullDto): void {
-    
   }
 }
