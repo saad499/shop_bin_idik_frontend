@@ -20,15 +20,16 @@ import { ColorDto } from '../../dto/ColorDto';
 export class MerchantProductComponent implements OnInit{
   private destroy$ = new Subject<void>();
   private searchSubject$ = new Subject<string>();
-  products: ProductFullDto[] = [];
+  products: (ProductFullDto | ProductDto)[] = [];
   filteredProducts: (ProductFullDto | ProductDto)[] = [];
+  paginatedProducts: (ProductFullDto | ProductDto)[] = [];
   searchTerm: string = '';
   isSearching: boolean = false;
   productActiveStatus: Map<number, boolean> = new Map();
 
    // Pagination properties
-  currentPage: number = 1;
-  pageSize: number = 10;
+  currentPage: number = 0;
+  pageSize: number = 5;
   totalPages: number = 0;
   totalItems: number = 0;
 
@@ -53,51 +54,117 @@ export class MerchantProductComponent implements OnInit{
           this.isSearching = true;
           if (!term || term.trim() === '') {
             // If empty, return all products
-            return of(this.products);
+            return this.productService.getAllProductsFull(this.currentPage, this.pageSize);
           } else {
             // Call backend search API
-            return this.productService.searchProducts(term);
+            return this.productService.searchProducts(term, this.currentPage, this.pageSize);
           }
         }),
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: (data) => {
-          this.filteredProducts = data;
-          this.currentPage = 1;
-          //this.updatePagination();
-          this.loadActiveStatus(data);
+        next: (page) => {
+          this.products = page.content;
+          this.totalPages = page.totalPages;
+          this.totalItems = page.totalElements;
+          this.loadActiveStatus(page.content);
           this.isSearching = false;
         },
         error: (err) => {
           console.error('Error searching products:', err);
           this.isSearching = false;
           this.filteredProducts = this.products;
-          //this.updatePagination();
+          this.updatePagination();
         }
       });
   }
 
   onSearchChange(searchTerm: string): void {
+    this.currentPage = 0;
     this.searchSubject$.next(searchTerm);
   }
 
   loadProducts(): void {
-    this.productService.getAllProductsFull()
+    this.productService.getAllProductsFull(this.currentPage, this.pageSize)
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: (data) => {
-        this.products = data;
-        this.filteredProducts = data;
-        this.loadActiveStatus(data);
-      },
+      next: (page) => {
+          this.products = page.content;
+          this.totalPages = page.totalPages;
+          this.totalItems = page.totalElements;
+          this.loadActiveStatus(page.content);
+        },
       error: (err) => {
         console.error('Error loading products:', err);
       }
     });
   }
 
+  updatePagination(): void {
+    this.totalItems = this.filteredProducts.length;
+    this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+    
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedProducts = this.filteredProducts.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      if (this.searchTerm && this.searchTerm.trim() !== '') {
+        this.searchSubject$.next(this.searchTerm);
+      } else {
+        this.loadProducts();
+      }
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      if (this.searchTerm && this.searchTerm.trim() !== '') {
+        this.searchSubject$.next(this.searchTerm);
+      } else {
+        this.loadProducts();
+      }
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      if (this.searchTerm && this.searchTerm.trim() !== '') {
+        this.searchSubject$.next(this.searchTerm);
+      } else {
+        this.loadProducts();
+      }
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    
+    let startPage = Math.max(0, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages - 1, startPage + maxPagesToShow - 1);
+    
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(0, endPage - maxPagesToShow + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  }
+
   loadActiveStatus(products: (ProductFullDto | ProductDto)[]): void {
+    if (products.length === 0) {
+      return;
+    }
+
     const requests = products.map(product => {
       const id = this.getProductId(product);
       return this.productService.getIsActive(id);
@@ -178,7 +245,7 @@ export class MerchantProductComponent implements OnInit{
     
     this.filteredProducts = this.products.filter(p => 
       p.nom.toLowerCase().includes(term) ||
-      p.categorie?.nom?.toLowerCase().includes(term)
+      ('categorie' in p && p.categorie?.nom?.toLowerCase().includes(term))
     );
     
     this.isSearching = false;

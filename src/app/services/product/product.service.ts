@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProductDto } from '../../dto/ProductDto';
 import { ProductFullDto } from '../../dto/ProductFullDto';
+import { Page } from '../../dto/Pageable/Page';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -25,7 +26,7 @@ export class ProductService {
       params: { id: id.toString() }
     });
   }
-  
+
   deactivate(id: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/activate-desactivate`, null, { 
       params: new HttpParams().set('id', id) 
@@ -38,10 +39,12 @@ export class ProductService {
     });
   }
 
-  getAllByIsActive(isActive: boolean): Observable<ProductDto[]> {
-    return this.http.get<ProductDto[]>(`${this.apiUrl}/active`, { 
-      params: new HttpParams().set('isActive', isActive) 
-    });
+  getAllByIsActive(isActive: boolean, page: number = 0, size: number = 5): Observable<Page<ProductDto>> {
+    const params = new HttpParams()
+      .set('isActive', isActive.toString())
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductDto>>(`${this.apiUrl}/active`, { params });
   }
 
   getByIsActive(isActive: boolean): Observable<ProductDto> {
@@ -50,8 +53,11 @@ export class ProductService {
     });
   }
 
-  getAllProductsFull(): Observable<ProductFullDto[]> {
-    return this.http.get<ProductFullDto[]>(`${this.apiUrl}/all-full`);
+  getAllProductsFull(page: number = 0, size: number = 5): Observable<Page<ProductFullDto>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductFullDto>>(`${this.apiUrl}/all-full`, { params });
   }
 
   getById(id: number): Observable<any> {
@@ -60,9 +66,27 @@ export class ProductService {
     });
   }
 
-  searchProducts(searchTerm: string): Observable<ProductDto[]> {
-    return this.http.get<ProductDto[]>(`${this.apiUrl}/search`, {
-      params: { searchTerm }
-    });
+  searchProducts(searchTerm: string, page: number = 0, size: number = 5): Observable<Page<ProductDto>> {
+    const params = new HttpParams()
+      .set('searchTerm', searchTerm)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductDto>>(`${this.apiUrl}/search`, { params });
+  }
+
+  searchByNom(nom: string, page: number = 0, size: number = 5): Observable<Page<ProductDto>> {
+    const params = new HttpParams()
+      .set('nom', nom)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductDto>>(`${this.apiUrl}/search/nom`, { params });
+  }
+
+  searchByCategorie(categorieName: string, page: number = 0, size: number = 5): Observable<Page<ProductDto>> {
+    const params = new HttpParams()
+      .set('categorieName', categorieName)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductDto>>(`${this.apiUrl}/search/categorie`, { params });
   }
 }

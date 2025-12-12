@@ -24,7 +24,7 @@
     </tr>
   </thead>
   <tbody>
-   <tr *ngFor="let product of filteredProducts">
+   <tr *ngFor="let product of products; let i = index">
     <td>
       <img [src]="getFirstImage(product)" 
             alt="{{ product.nom }}" 
@@ -67,18 +67,18 @@
   </tbody>
 </table>
 
-<!--<div class="row mt-3">
+<div class="row mt-3">
     <div class="col-md-6">
       <p class="text-muted">
-        Affichage de {{ (currentPage - 1) * pageSize + 1 }} à 
-        {{ currentPage * pageSize > totalItems ? totalItems : currentPage * pageSize }} 
+        Affichage de {{ currentPage * pageSize + 1 }} à 
+        {{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }} 
         sur {{ totalItems }} produits
       </p>
     </div>
     <div class="col-md-6">
       <nav aria-label="Page navigation">
         <ul class="pagination justify-content-end">
-          <li class="page-item" [class.disabled]="currentPage === 1">
+          <li class="page-item" [class.disabled]="currentPage === 0">
             <a class="page-link" (click)="previousPage()" style="cursor: pointer;" tabindex="-1">
               Previous
             </a>
@@ -87,10 +87,10 @@
               *ngFor="let page of getPageNumbers()"
               [class.active]="page === currentPage">
             <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">
-              {{ page }}
+              {{ page + 1 }}
             </a>
           </li>
-          <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
             <a class="page-link" (click)="nextPage()" style="cursor: pointer;">
               Next
             </a>
@@ -98,6 +98,5 @@
         </ul>
       </nav>
     </div>
-  </div>-->
-
+  </div>
 </div>
