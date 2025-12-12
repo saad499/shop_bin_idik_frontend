@@ -1,4 +1,4 @@
-import { Component, Injectable, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injectable, OnInit } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
@@ -10,17 +10,21 @@ import { debounceTime, distinctUntilChanged, forkJoin, of, Subject, switchMap, t
 import { ProductDto } from '../../dto/ProductDto';
 import { ColorDto } from '../../dto/ColorDto';
 import { ProductRefreshService } from '../../services/product/product-refresh.service';
+import { CategoryService } from '../../services/category/category.service';
+import { CategoryFullDto } from '../../dto/CategoryFullDto';
+import { StatusProduct } from '../../enum/StatusProduct';
+import { SizeDto } from '../../dto/SizeDto';
+import { ImageDto } from '../../dto/ImageDto';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 
 @Component({
   selector: 'app-merchant-product',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzDividerModule, NzTableModule, NzSwitchModule],
+  imports: [CommonModule, FormsModule, NzDividerModule, NzTableModule, NzSwitchModule, NzDrawerModule],
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.css']
 })
-@Injectable({
-  providedIn: 'root'
-})
+
 export class MerchantProductComponent implements OnInit{
 
   private destroy$ = new Subject<void>();
@@ -28,10 +32,20 @@ export class MerchantProductComponent implements OnInit{
   products: (ProductFullDto | ProductDto)[] = [];
   filteredProducts: (ProductFullDto | ProductDto)[] = [];
   paginatedProducts: (ProductFullDto | ProductDto)[] = [];
+  categories: CategoryFullDto[] = [];
   searchTerm: string = '';
   isSearching: boolean = false;
   productActiveStatus: Map<number, boolean> = new Map();
 
+  // Edit drawer
+  editDrawerVisible = false;
+  editingProduct: ProductDto = this.getEmptyProduct();
+  productImages: Array<{ file: File; preview: string }> = [];
+  sizesInput: string = '';
+  colorName: string = '';
+  colorCode: string = '#000000';
+  isUpdating: boolean = false;
+  statusProduct = StatusProduct;
    // Pagination properties
   currentPage: number = 0;
   pageSize: number = 5;
@@ -40,12 +54,14 @@ export class MerchantProductComponent implements OnInit{
 
   constructor(
     private productService: ProductService,
-    private productRefreshService: ProductRefreshService
+    private categoryService: CategoryService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.setupSearch();
     this.loadProducts();
+    this.loadCategories();
   }
 
   ngOnDestroy(): void {
@@ -107,6 +123,191 @@ export class MerchantProductComponent implements OnInit{
         console.error('Error loading products:', err);
       }
     });
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAllCategoriesFull()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.categories = data;
+        },
+        error: (err) => console.error('Error loading categories:', err)
+      });
+  }
+
+   openEditDrawer(product: ProductFullDto | ProductDto): void {
+    console.log('Opening edit drawer for product:', product);
+    this.editingProduct = {
+      id: product.id,
+      nom: product.nom,
+      description: product.description,
+      prix: product.prix,
+      stock: product.stock,
+      status: product.status,
+      isActiveProduct: product.isActiveProduct,
+      categorieId: 'categorie' in product ? product.categorie?.id || 0 : product.categorieId,
+      sizes: product.sizes ? [...product.sizes] : [],
+      colors: product.colors ? [...product.colors] : [],
+      images: product.images ? [...product.images] : []
+    };
+    
+    // Load existing images
+    this.productImages = product.images && product.images.length > 0 
+    ? product.images.map((img, index) => ({
+        file: new File([], `existing-${index}`),
+        preview: img.imageUrl
+      }))
+    : [];
+  
+    console.log('Editing product data:', this.editingProduct);
+    this.editDrawerVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  updateProduct(): void {
+    if (this.isUpdating || !this.editingProduct.id) {
+      return;
+    }
+    
+    // Validation
+    if (!this.editingProduct.nom || !this.editingProduct.nom.trim()) {
+      alert('Le nom du produit est obligatoire');
+      return;
+    }
+
+    if (!this.editingProduct.prix || this.editingProduct.prix <= 0) {
+      alert('Le prix doit être supérieur à 0');
+      return;
+    }
+
+    if (!this.editingProduct.categorieId || this.editingProduct.categorieId === 0) {
+      alert('Veuillez sélectionner une catégorie');
+      return;
+    }
+    this.editingProduct.images = this.parseImages();
+    this.isUpdating = true;
+    this.cdr.detectChanges();
+
+    this.productService.update(this.editingProduct.id, this.editingProduct)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          setTimeout(() => {
+            this.isUpdating = false;
+            this.editDrawerVisible = false;
+            this.cdr.detectChanges();
+            setTimeout(() => {
+              this.resetEditForm();
+              this.loadProducts();
+              alert('Produit modifié avec succès!');
+            }, 50);
+          }, 0);
+        },
+        error: (err) => {
+          console.error('Error updating product:', err);
+        setTimeout(() => {
+          this.isUpdating = false;
+          this.cdr.detectChanges();
+          alert('Erreur lors de la modification du produit');
+        }, 0);
+        }
+      });
+  }
+
+  closeEditDrawer(): void {
+    setTimeout(() => {
+    this.editDrawerVisible = false;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.resetEditForm();
+    }, 50);
+  }, 0);
+  }
+  resetEditForm(): void {
+    this.editingProduct = this.getEmptyProduct();
+    this.sizesInput = '';
+    this.colorName = '';
+    this.colorCode = '#000000';
+    this.productImages = [];
+  }
+
+  addSize(): void {
+    if (this.sizesInput && this.sizesInput.trim() !== '') {
+      const sizes = this.parseSizes(this.sizesInput);
+      this.editingProduct.sizes = [...this.editingProduct.sizes, ...sizes];
+      this.sizesInput = '';
+    }
+  }
+
+  removeSize(index: number): void {
+    this.editingProduct.sizes.splice(index, 1);
+  }
+
+  parseSizes(input: string): SizeDto[] {
+    return input
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(sizeName => ({ sizeName }));
+  }
+
+  // Color methods
+  addColor(): void {
+    if (this.colorName && this.colorCode) {
+      this.editingProduct.colors.push({
+        colorName: this.colorName.trim(),
+        colorCode: this.colorCode
+      });
+      this.colorName = '';
+      this.colorCode = '#000000';
+    }
+  }
+
+  removeColor(index: number): void {
+    this.editingProduct.colors.splice(index, 1);
+  }
+
+  // Image methods
+  onFilesSelected(event: any): void {
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.productImages.push({
+          file: file,
+          preview: e.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage(index: number): void {
+    this.productImages.splice(index, 1);
+  }
+
+  parseImages(): ImageDto[] {
+    return this.productImages.map(file => ({
+      imageUrl: file.preview || '',
+      imageData: file.preview || ''
+    }));
+  }
+
+  private getEmptyProduct(): ProductDto {
+    return {
+      nom: '',
+      description: '',
+      prix: 0,
+      sizes: [],
+      colors: [],
+      images: [],
+      stock: 0,
+      status: StatusProduct.ACTIF,
+      isActiveProduct: true,
+      categorieId: 0
+    };
   }
 
   updatePagination(): void {
@@ -310,5 +511,9 @@ export class MerchantProductComponent implements OnInit{
         console.error('Error deactivating product:', err);
       }
     });
+  }
+
+  editProduct(product: ProductFullDto): void {
+    
   }
 }

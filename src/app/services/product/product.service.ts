@@ -15,10 +15,9 @@ export class ProductService {
     return this.http.post(`${this.apiUrl}`, dto);
   }
 
-  update(id: number, dto: ProductDto): Observable<any> {
-    return this.http.post(`${this.apiUrl}/update`, dto, { 
-      params: new HttpParams().set('id', id) 
-    });
+  update(id: number, product: ProductDto): Observable<ProductDto> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.post<ProductDto>(`${this.apiUrl}/update`, product, { params });
   }
 
   getIsActive(id: number): Observable<boolean> {

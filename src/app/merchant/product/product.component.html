@@ -49,7 +49,9 @@
     </td>
     <td>{{ getDateCreated(product) | date:'short' }}</td>
     <td>
-      <button class="btn btn-sm btn-warning me-2" title="Modifier">
+      <button class="btn btn-sm btn-warning me-2" 
+          (click)="openEditDrawer(product)"
+          title="Modifier">
         <i class="bi bi-pencil"></i>
       </button>
       <button class="btn btn-sm btn-danger me-2" 
@@ -100,3 +102,174 @@
     </div>
   </div>
 </div>
+
+
+<!-- Edit Product Drawer -->
+<nz-drawer
+  *ngIf="editDrawerVisible"
+  [nzBodyStyle]="{ overflow: 'auto' }"
+  [nzMaskClosable]="false"
+  [nzWidth]="600"
+  [nzVisible]="editDrawerVisible"
+  nzTitle="Modifier le produit"
+  [nzFooter]="editFooterTpl"
+  (nzOnClose)="closeEditDrawer()">
+  
+  <div *nzDrawerContent>
+    <form>
+      <!-- Product Name and Price -->
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label>Nom du produit *</label>
+          <input type="text" class="form-control" 
+                 [(ngModel)]="editingProduct.nom" 
+                 name="nom" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+          <label>Prix (MAD) *</label>
+          <input type="number" class="form-control" 
+                 [(ngModel)]="editingProduct.prix" 
+                 name="prix" />
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label>Description</label>
+        <textarea class="form-control" rows="3"
+                  [(ngModel)]="editingProduct.description" 
+                  name="description"></textarea>
+      </div>
+
+      <!-- Category and Stock -->
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label>Catégorie *</label>
+          <select class="form-select"
+                  [(ngModel)]="editingProduct.categorieId"
+                  name="categorieId">
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.nom }}
+            </option>
+          </select>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+          <label>Stock *</label>
+          <input type="number" class="form-control" 
+                 [(ngModel)]="editingProduct.stock" 
+                 name="stock" />
+        </div>
+      </div>
+
+      <!-- Sizes -->
+      <div class="mb-3">
+        <label>Tailles disponibles</label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" 
+                 placeholder="Ex: S, M, L, XL" 
+                 [(ngModel)]="sizesInput" 
+                 name="sizesInput">
+          <button class="btn btn-outline-secondary" type="button" 
+                  (click)="addSize()">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+        <div class="d-flex flex-wrap gap-2" *ngIf="editingProduct.sizes && editingProduct.sizes.length > 0">
+          <span *ngFor="let size of editingProduct.sizes; let i = index" 
+                class="badge bg-primary d-flex align-items-center">
+            {{ size.sizeName }}
+            <button type="button" class="btn-close btn-close-white ms-2" 
+                    (click)="removeSize(i)"></button>
+          </span>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      <div class="mb-3">
+        <label>Couleurs du produit</label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" 
+                 placeholder="Nom de la couleur" 
+                 [(ngModel)]="colorName" 
+                 name="colorName">
+          <input type="color" class="form-control form-control-color" 
+                 [(ngModel)]="colorCode" 
+                 name="colorCode"
+                 style="max-width: 80px;">
+          <button class="btn btn-outline-secondary" type="button" 
+                  (click)="addColor()">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+        <div class="d-flex flex-wrap gap-2" *ngIf="editingProduct.colors && editingProduct.colors.length > 0">
+          <div *ngFor="let color of editingProduct.colors; let i = index" 
+               class="badge bg-light text-dark border d-flex align-items-center p-2">
+            <span class="color-preview me-2" 
+                  [style.background-color]="color.colorCode"
+                  style="width: 20px; height: 20px; border-radius: 3px;"></span>
+            {{ color.colorName }}
+            <button type="button" class="btn-close ms-2" 
+                    (click)="removeColor(i)"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="mb-3">
+        <label>Images du produit</label>
+        <input type="file" class="form-control" 
+               multiple accept="image/*" 
+               (change)="onFilesSelected($event)">
+        <div class="mt-2 d-flex flex-wrap gap-2" *ngIf="productImages.length">
+          <div *ngFor="let file of productImages; let i = index" class="position-relative">
+            <img [src]="file.preview" alt="preview" 
+                 class="rounded border" 
+                 style="width: 100px; height: 100px; object-fit: cover;">
+            <button type="button" 
+                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" 
+                    (click)="removeImage(i)">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="mb-3">
+        <label>Statut</label>
+        <select class="form-select"
+                [(ngModel)]="editingProduct.status"
+                name="status">
+          <option value="ACTIF">Actif</option>
+          <option value="INACTIF">Inactif</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" 
+                 [(ngModel)]="editingProduct.isActiveProduct"
+                 name="isActiveProduct">
+          <label class="form-check-label">
+            Produit actif pour la vente
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <ng-template #editFooterTpl>
+    <div class="d-flex justify-content-end gap-2">
+      <button class="btn btn-secondary" 
+              (click)="closeEditDrawer()" 
+              [disabled]="isUpdating">
+        Annuler
+      </button>
+      <button class="btn btn-primary" 
+              (click)="updateProduct()" 
+              [disabled]="isUpdating">
+        {{ isUpdating ? 'Modification...' : 'Modifier' }}
+      </button>
+    </div>
+  </ng-template>
+</nz-drawer>
