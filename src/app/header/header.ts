@@ -94,10 +94,31 @@ parseSizes(input: string): SizeDto[] {
 
   addColor(): void {
     if (this.colorName && this.colorCode) {
+      // Check if color name already exists
+      const isDuplicateName = this.newProduct.colors.some(
+        color => color.colorName.toLowerCase() === this.colorName.trim().toLowerCase()
+      );
+      
+      // Check if color code already exists
+      const isDuplicateCode = this.newProduct.colors.some(
+        color => color.colorCode.toLowerCase() === this.colorCode.toLowerCase()
+      );
+      
+      if (isDuplicateName) {
+        alert(`La couleur "${this.colorName}" existe déjà!`);
+        return;
+      }
+      
+      if (isDuplicateCode) {
+        alert(`Ce code couleur existe déjà!`);
+        return;
+      }
+      
       this.newProduct.colors.push({
         colorName: this.colorName.trim(),
         colorCode: this.colorCode
       });
+      
       this.colorName = '';
       this.colorCode = '#000000';
     }
@@ -108,19 +129,95 @@ parseSizes(input: string): SizeDto[] {
   }
 
   onFilesSelected(event: any): void {
-    const files: FileList = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
+  const files: FileList = event.target.files;
+  
+  if (files.length === 0) {
+    return;
+  }
+  
+  let duplicateCount = 0;
+  let invalidCount = 0;
+  let tooLargeCount = 0;
+  let addedCount = 0;
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      invalidCount++;
+      continue;
+    }
+    
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      tooLargeCount++;
+      continue;
+    }
+    
+    // Check for duplicate by file name and size
+    const isDuplicate = this.productImages.some(
+      existingImage => 
+        existingImage.file.name === file.name && 
+        existingImage.file.size === file.size
+    );
+    
+    if (isDuplicate) {
+      duplicateCount++;
+      continue;
+    }
+    
+    // Add the image
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      // Double-check for duplicate preview (same image content)
+      const isDuplicatePreview = this.productImages.some(
+        img => img.preview === e.target.result
+      );
+      
+      if (!isDuplicatePreview) {
         this.productImages.push({
           file: file,
           preview: e.target.result
         });
-      };
-      reader.readAsDataURL(file);
-    }
+        addedCount++;
+        this.cdr.detectChanges();
+      } else {
+        duplicateCount++;
+      }
+    };
+    reader.readAsDataURL(file);
   }
+  
+  // Show summary messages after a short delay to ensure all files are processed
+  setTimeout(() => {
+    let messages: string[] = [];
+    
+    if (addedCount > 0) {
+      messages.push(`✓ ${addedCount} image(s) ajoutée(s)`);
+    }
+    
+    if (duplicateCount > 0) {
+      messages.push(`⚠ ${duplicateCount} image(s) en double ignorée(s)`);
+    }
+    
+    if (invalidCount > 0) {
+      messages.push(`⚠ ${invalidCount} fichier(s) non-image ignoré(s)`);
+    }
+    
+    if (tooLargeCount > 0) {
+      messages.push(`⚠ ${tooLargeCount} image(s) trop volumineuse(s) (max 5MB)`);
+    }
+    
+    if (messages.length > 0) {
+      alert(messages.join('\n'));
+    }
+  }, 100);
+  
+  // Reset file input
+  event.target.value = '';
+}
 
   removeImage(index: number): void {
     this.productImages.splice(index, 1);
@@ -289,10 +386,23 @@ parseSizes(input: string): SizeDto[] {
 
     addSize(): void {
       if (this.sizesInput && this.sizesInput.trim() !== '') {
-        const sizes = this.parseSizes(this.sizesInput);
-        this.newProduct.sizes = [...this.newProduct.sizes, ...sizes];
-        this.sizesInput = '';
-      }
+      const newSizes = this.parseSizes(this.sizesInput);
+      
+      // Check for duplicates
+      newSizes.forEach(newSize => {
+        const isDuplicate = this.newProduct.sizes.some(
+          existingSize => existingSize.sizeName.toLowerCase() === newSize.sizeName.toLowerCase()
+        );
+        
+        if (isDuplicate) {
+          alert(`La taille "${newSize.sizeName}" existe déjà!`);
+        } else {
+          this.newProduct.sizes.push(newSize);
+        }
+      });
+      
+      this.sizesInput = '';
+    }
     }
 
     removeSize(index: number): void {

@@ -16,6 +16,9 @@ import { StatusProduct } from '../../enum/StatusProduct';
 import { SizeDto } from '../../dto/SizeDto';
 import { ImageDto } from '../../dto/ImageDto';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { ImageService } from '../../services/image/image.service';
+import { ColorService } from '../../services/color/color.service';
+import { SizeService } from '../../services/size/size.service';
 
 @Component({
   selector: 'app-merchant-product',
@@ -40,7 +43,7 @@ export class MerchantProductComponent implements OnInit{
   // Edit drawer
   editDrawerVisible = false;
   editingProduct: ProductDto = this.getEmptyProduct();
-  productImages: Array<{ file: File; preview: string }> = [];
+  productImages: Array<{ file: File; preview: string; id?: number }> = [];
   sizesInput: string = '';
   colorName: string = '';
   colorCode: string = '#000000';
@@ -55,6 +58,9 @@ export class MerchantProductComponent implements OnInit{
   constructor(
     private productService: ProductService,
     private categoryService: CategoryService,
+    private sizeService: SizeService,
+    private colorService: ColorService,
+    private imageService: ImageService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -156,7 +162,8 @@ export class MerchantProductComponent implements OnInit{
     this.productImages = product.images && product.images.length > 0 
     ? product.images.map((img, index) => ({
         file: new File([], `existing-${index}`),
-        preview: img.imageUrl
+        preview: img.imageUrl,
+        id: img.id
       }))
     : [];
   
@@ -241,7 +248,27 @@ export class MerchantProductComponent implements OnInit{
   }
 
   removeSize(index: number): void {
-    this.editingProduct.sizes.splice(index, 1);
+    const size = this.editingProduct.sizes[index];
+
+    if (size.id) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette taille?')) {
+        this.sizeService.deleteSize(size.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.editingProduct.sizes.splice(index, 1);
+              alert('Taille supprimée avec succès!');
+            },
+            error: (err) => {
+              console.error('Error deleting size:', err);
+              alert('Erreur lors de la suppression de la taille');
+            }
+          });
+      }
+    } else {
+      // New size not yet saved - just remove from array
+      this.editingProduct.sizes.splice(index, 1);
+    }
   }
 
   parseSizes(input: string): SizeDto[] {
@@ -265,7 +292,28 @@ export class MerchantProductComponent implements OnInit{
   }
 
   removeColor(index: number): void {
-    this.editingProduct.colors.splice(index, 1);
+    const color = this.editingProduct.colors[index];
+    
+    // If the color has an ID, it exists in the database - call API
+    if (color.id) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette couleur?')) {
+        this.colorService.deleteColor(color.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.editingProduct.colors.splice(index, 1);
+              alert('Couleur supprimée avec succès!');
+            },
+            error: (err) => {
+              console.error('Error deleting color:', err);
+              alert('Erreur lors de la suppression de la couleur');
+            }
+          });
+      }
+    } else {
+      // New color not yet saved - just remove from array
+      this.editingProduct.colors.splice(index, 1);
+    }
   }
 
   // Image methods
@@ -285,7 +333,32 @@ export class MerchantProductComponent implements OnInit{
   }
 
   removeImage(index: number): void {
-    this.productImages.splice(index, 1);
+    const image = this.productImages[index];
+    
+    // If the image has an ID, it exists in the database - call API
+    if (image.id) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette image?')) {
+        this.imageService.deleteImage(image.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.productImages.splice(index, 1);
+              // Also remove from editingProduct.images
+              const imgIndex = this.editingProduct.images.findIndex(img => img.id === image.id);
+              if (imgIndex !== -1) {
+                this.editingProduct.images.splice(imgIndex, 1);
+              }
+            },
+            error: (err) => {
+              console.error('Error deleting image:', err);
+              alert('Erreur lors de la suppression de l\'image');
+            }
+          });
+      }
+    } else {
+      // New image not yet saved - just remove from array
+      this.productImages.splice(index, 1);
+    }
   }
 
   parseImages(): ImageDto[] {
