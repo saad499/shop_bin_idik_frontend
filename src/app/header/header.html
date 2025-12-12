@@ -86,7 +86,6 @@
                 {{ cat.nom }}
             </option>
           </select>
-          <small class="text-muted">Debug: {{ selectedValue }}</small>
         </div>
         
         <div class="col-auto d-flex align-items-center mb-3">
@@ -115,10 +114,17 @@
       <!-- Sizes -->
       <div class="mb-3">
         <label for="sizes">Tailles disponibles</label>
-        <input type="text" class="form-control" 
-               placeholder="Ex: S, M, L, XL" 
-               [(ngModel)]="sizesInput" 
-               [ngModelOptions]="{standalone: true}">
+        <div class="input-group">
+          <input type="text" class="form-control" 
+                 placeholder="Ex: S, M, L, XL" 
+                 [(ngModel)]="sizesInput" 
+                 [ngModelOptions]="{standalone: true}">
+          <button class="btn btn-outline-secondary" type="button" 
+                  (click)="addSize()" 
+                  [disabled]="!sizesInput || sizesInput.trim() === ''">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
         <small class="text-muted">Séparez les tailles par des virgules</small>
       </div>
 
@@ -135,24 +141,106 @@
                  style="width: 100px; height: 100px; object-fit: cover;">
           </div>
         </div>
+        <small class="text-muted">Séparez les tailles par des virgules</small>
+        
+        <!-- Display added sizes -->
+        <div class="mt-2 d-flex flex-wrap gap-2" *ngIf="newProduct.sizes.length > 0">
+          <span *ngFor="let size of newProduct.sizes; let i = index" 
+                class="badge bg-primary d-flex align-items-center">
+            {{ size.sizeName }}
+            <button type="button" class="btn-close btn-close-white ms-2" 
+                    style="font-size: 0.7rem;"
+                    (click)="removeSize(i)"
+                    aria-label="Supprimer"></button>
+          </span>
+        </div>
       </div>
 
       <!-- Color -->
       <div class="mb-3">
-        <label for="productColor">Couleur du produit</label>
-        <input type="color" id="productColor" class="form-control form-control-color" 
-               [(ngModel)]="productColor" 
-               [ngModelOptions]="{standalone: true}" 
-               style="width: 60px; height: 40px;">
+        <label for="productColor">Couleurs du produit *</label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" 
+                 placeholder="Nom de la couleur (ex: Rouge)" 
+                 [(ngModel)]="colorName" 
+                 [ngModelOptions]="{standalone: true}">
+          <input type="color" class="form-control form-control-color" 
+                 [(ngModel)]="colorCode" 
+                 [ngModelOptions]="{standalone: true}" 
+                 style="max-width: 80px;">
+          <button class="btn btn-outline-secondary" type="button" 
+                  (click)="addColor()" 
+                  [disabled]="!colorName || colorCode.trim() === ''">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2" *ngIf="newProduct.colors.length > 0">
+          <div *ngFor="let color of newProduct.colors; let i = index" 
+               class="badge bg-light text-dark border d-flex align-items-center p-2">
+            <span class="color-preview me-2" 
+                  [style.background-color]="color.colorCode"
+                  style="width: 20px; height: 20px; border-radius: 3px; border: 1px solid #ddd;"></span>
+            {{ color.colorName }}
+            <button type="button" class="btn-close ms-2" 
+                    style="font-size: 0.7rem;"
+                    (click)="removeColor(i)"
+                    aria-label="Supprimer"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="productImages">Images du produit *</label>
+        <input type="file" id="productImages" class="form-control" 
+               multiple accept="image/*" 
+               (change)="onFilesSelected($event)">
+        <small class="text-muted">Vous pouvez sélectionner plusieurs images</small>
+        
+        <div class="mt-2 d-flex flex-wrap gap-2" *ngIf="productImages.length">
+          <div *ngFor="let file of productImages; let i = index" class="position-relative">
+            <img [src]="file.preview" alt="preview" 
+                 class="rounded border" 
+                 style="width: 100px; height: 100px; object-fit: cover;">
+            <button type="button" 
+                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" 
+                    style="padding: 2px 6px; font-size: 0.75rem;"
+                    (click)="removeImage(i)">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="status">Statut du produit *</label>
+        <select class="form-select"
+                [(ngModel)]="newProduct.status"
+                [ngModelOptions]="{standalone: true}">
+          <option [value]="statusProduct.ACTIF">Actif</option>
+          <option [value]="statusProduct.INACTIF">Inactif</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" 
+                 id="isActiveProduct"
+                 [(ngModel)]="newProduct.isActiveProduct"
+                 [ngModelOptions]="{standalone: true}">
+          <label class="form-check-label" for="isActiveProduct">
+            Produit actif pour la vente
+          </label>
+        </div>
       </div>
     </form>
   </div>
 
   <ng-template #footerTpl>
     <div class="d-flex justify-content-end gap-2">
-      <button nz-button (click)="closeDrawer()" [disabled]="isAddingProduct">
+      <button nz-button (click)="closeDrawer()">
         Annuler
-      </button>
+      </button><!-- [disabled]="isAddingProduct"-->
       <button nz-button nzType="primary" 
               (click)="addProduct()" 
               [disabled]="isAddingProduct" 

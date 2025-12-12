@@ -16,6 +16,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SizeDto } from '../dto/SizeDto';
 import { ColorDto } from '../dto/ColorDto';
 import { ImageDto } from '../dto/ImageDto';
+import { ProductRefreshService } from '../services/product/product-refresh.service';
 
 @Component({
   selector: 'app-header',
@@ -44,17 +45,17 @@ export class Header implements OnInit, OnDestroy {
   categoryDrawerVisible = false;
   
   // Loading states
-  isAddingProduct = false;
   isAddingCategory = false;
   
   // Form data
   selectedValue: number | undefined = undefined;
-  productImages: Array<File & { preview?: string }> = [];
-  productColor: string = '#000000';
   sizesInput: string = '';
-  
+  colorName: string = '';
+  colorCode: string = '#000000';
   newProduct: ProductDto = this.getEmptyProduct();
-  
+  productImages: Array<{ file: File; preview: string }> = [];
+  isAddingProduct: boolean = false;
+  statusProduct = StatusProduct;
   // Categories
   categories: CategoryFullDto[] = [];
   selectedCategory: CategoryFullDto | null = null;
@@ -63,6 +64,7 @@ export class Header implements OnInit, OnDestroy {
   constructor(
     private categoryService: CategoryService, 
     private productService: ProductService,
+    private productRefreshService: ProductRefreshService,
     private cdr: ChangeDetectorRef
   ) {}    
 
@@ -82,28 +84,59 @@ parseSizes(input: string): SizeDto[] {
     .filter(s => s.length > 0)
     .map(sizeName => ({ sizeName }));
 }
-parseColors(): ColorDto[] {
+/*parseColors(): ColorDto[] {
   if (!this.productColor) return [];
   return [{
     colorName: 'Custom Color',
     colorCode: this.productColor 
   }];
-}
+}*/
 
-parseImages(): ImageDto[] {
-  return this.productImages.map(file => ({
-    imageUrl: file.preview || '',
-    imageData: file.preview || ''
-  }));
-}
+  addColor(): void {
+    if (this.colorName && this.colorCode) {
+      this.newProduct.colors.push({
+        colorName: this.colorName.trim(),
+        colorCode: this.colorCode
+      });
+      this.colorName = '';
+      this.colorCode = '#000000';
+    }
+  }
+
+  removeColor(index: number): void {
+    this.newProduct.colors.splice(index, 1);
+  }
+
+  onFilesSelected(event: any): void {
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.productImages.push({
+          file: file,
+          preview: e.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage(index: number): void {
+    this.productImages.splice(index, 1);
+  }
+
+  parseImages(): ImageDto[] {
+    return this.productImages.map(file => ({
+      imageUrl: file.preview || '',
+      imageData: file.preview || ''
+    }));
+  }
 // Product Methods
   addProduct(): void {
     if (this.isAddingProduct) {
       return;
     }
-    
-    this.newProduct.sizes = this.parseSizes(this.sizesInput);
-    this.newProduct.colors = this.parseColors();
     this.newProduct.images = this.parseImages();
     this.newProduct.categorieId = this.selectedValue!;
     this.isAddingProduct = true;
@@ -113,6 +146,7 @@ parseImages(): ImageDto[] {
       .subscribe({
         next: () => {
           alert('Produit ajouté avec succès!');
+          this.productRefreshService.triggerRefresh();
           this.closeDrawer();
           this.resetProductForm();
         },
@@ -126,36 +160,28 @@ parseImages(): ImageDto[] {
         }
       });
   }
-
-  validateProduct(): boolean {
-    if (!this.newProduct.nom || !this.newProduct.prix || !this.selectedValue || !this.newProduct.stock) {
-      alert('Veuillez remplir tous les champs obligatoires (*)');
-      return false;
-    }
-    return true;
+  isFormValid(): boolean {
+    return !!(
+      this.newProduct.nom &&
+      this.newProduct.prix > 0 &&
+      this.newProduct.stock >= 0 &&
+      this.newProduct.sizes.length > 0 &&
+      this.newProduct.colors.length > 0 &&
+      this.productImages.length > 0 &&
+      this.selectedValue
+    );
   }
 
   resetProductForm(): void {
     this.newProduct = this.getEmptyProduct();
     this.sizesInput = '';
-    this.productColor = '#000000';
+    this.colorName = '';
+    this.colorCode = '#000000';
+    this.productImages = [];
+    this.selectedValue = undefined;
   }
 
-  onFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.productImages = Array.from(input.files).map(file => {
-        const fileWithPreview = file as File & { preview?: string };
-        const reader = new FileReader();
-        reader.onload = (e: ProgressEvent<FileReader>) => {
-          fileWithPreview.preview = e.target?.result as string;
-          this.cdr.detectChanges();
-        };
-        reader.readAsDataURL(file);
-        return fileWithPreview;
-      });
-    }
-  }
+  
 
   // Category Methods
   loadCategories(): void {
@@ -256,9 +282,22 @@ parseImages(): ImageDto[] {
       images: [],
       stock: 0,
       status: StatusProduct.ACTIF,
+      isActiveProduct: true,
       categorieId: 0
     };
   }
+
+    addSize(): void {
+      if (this.sizesInput && this.sizesInput.trim() !== '') {
+        const sizes = this.parseSizes(this.sizesInput);
+        this.newProduct.sizes = [...this.newProduct.sizes, ...sizes];
+        this.sizesInput = '';
+      }
+    }
+
+    removeSize(index: number): void {
+      this.newProduct.sizes.splice(index, 1);
+    }
 
   private getEmptyCategory(): CategoryDto {
     return { 

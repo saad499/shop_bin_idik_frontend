@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Injectable, OnInit } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
@@ -9,6 +9,7 @@ import { ProductService } from '../../services/product/product.service';
 import { debounceTime, distinctUntilChanged, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { ProductDto } from '../../dto/ProductDto';
 import { ColorDto } from '../../dto/ColorDto';
+import { ProductRefreshService } from '../../services/product/product-refresh.service';
 
 @Component({
   selector: 'app-merchant-product',
@@ -17,7 +18,11 @@ import { ColorDto } from '../../dto/ColorDto';
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.css']
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class MerchantProductComponent implements OnInit{
+
   private destroy$ = new Subject<void>();
   private searchSubject$ = new Subject<string>();
   products: (ProductFullDto | ProductDto)[] = [];
@@ -33,7 +38,10 @@ export class MerchantProductComponent implements OnInit{
   totalPages: number = 0;
   totalItems: number = 0;
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private productRefreshService: ProductRefreshService
+  ) {}
 
   ngOnInit(): void {
     this.setupSearch();
@@ -92,6 +100,7 @@ export class MerchantProductComponent implements OnInit{
           this.products = page.content;
           this.totalPages = page.totalPages;
           this.totalItems = page.totalElements;
+          this.currentPage = page.number;
           this.loadActiveStatus(page.content);
         },
       error: (err) => {
