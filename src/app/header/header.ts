@@ -17,6 +17,7 @@ import { SizeDto } from '../dto/SizeDto';
 import { ColorDto } from '../dto/ColorDto';
 import { ImageDto } from '../dto/ImageDto';
 import { ProductRefreshService } from '../services/product/product-refresh.service';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -24,6 +25,7 @@ import { ProductRefreshService } from '../services/product/product-refresh.servi
   imports: [
     CommonModule, 
     FormsModule, 
+    RouterModule,
     NzIconModule, 
     NzDrawerModule, 
     NzButtonModule, 
@@ -65,6 +67,7 @@ export class Header implements OnInit, OnDestroy {
     private categoryService: CategoryService, 
     private productService: ProductService,
     private productRefreshService: ProductRefreshService,
+    private route: Router,
     private cdr: ChangeDetectorRef
   ) {}    
 
@@ -72,10 +75,13 @@ export class Header implements OnInit, OnDestroy {
     this.loadCategories();
   }
 
-ngOnDestroy(): void {
-  this.destroy$.next();
-  this.destroy$.complete();
-}
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  navigateToProducts(): void {
+    this.productRefreshService.triggerRefresh();
+  }
 
 parseSizes(input: string): SizeDto[] {
   return input
@@ -246,6 +252,12 @@ parseSizes(input: string): SizeDto[] {
           this.productRefreshService.triggerRefresh();
           this.closeDrawer();
           this.resetProductForm();
+          this.route.navigate(['/merchant/product']).then(() => {
+            // ✅ Déclencher le refresh après la navigation
+            setTimeout(() => {
+              this.productRefreshService.triggerRefresh();
+            }, 100);
+          });
         },
         error: (err) => {
           console.error('Error adding product:', err);

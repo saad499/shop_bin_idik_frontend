@@ -16,13 +16,17 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/merchant/product" routerLinkActive="active">Mes produits</a>
+            <a class="nav-link" 
+               routerLink="/merchant/product" 
+               routerLinkActive="active" 
+               (click)="navigateToProducts()"
+               [routerLinkActiveOptions]="{exact: false}">Mes produits</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/merchant/order" routerLinkActive="active">Commandes</a>
+            <a class="nav-link" routerLink="/merchant/order" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Commandes</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/merchant/delivery" routerLinkActive="active">Livreurs</a>
+            <a class="nav-link" routerLink="/merchant/delivery" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Livreurs</a>
           </li>
         </ul>
       </div>

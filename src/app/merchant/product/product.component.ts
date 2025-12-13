@@ -6,9 +6,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductFullDto } from '../../dto/ProductFullDto';
 import { ProductService } from '../../services/product/product.service';
-import { debounceTime, distinctUntilChanged, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, forkJoin, Observable, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { ProductDto } from '../../dto/ProductDto';
 import { ColorDto } from '../../dto/ColorDto';
+import { Page } from '../../dto/Pageable/Page';
 import { ProductRefreshService } from '../../services/product/product-refresh.service';
 import { CategoryService } from '../../services/category/category.service';
 import { CategoryFullDto } from '../../dto/CategoryFullDto';
@@ -19,6 +20,7 @@ import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { ImageService } from '../../services/image/image.service';
 import { ColorService } from '../../services/color/color.service';
 import { SizeService } from '../../services/size/size.service';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-merchant-product',
@@ -39,6 +41,10 @@ export class MerchantProductComponent implements OnInit{
   searchTerm: string = '';
   isSearching: boolean = false;
   productActiveStatus: Map<number, boolean> = new Map();
+  // Details drawer
+  detailsDrawerVisible = false;
+  viewingProduct: ProductFullDto | ProductDto | null = null;
+  selectedImage: string | null = null;
 
   // Edit drawer
   editDrawerVisible = false;
@@ -61,18 +67,37 @@ export class MerchantProductComponent implements OnInit{
     private sizeService: SizeService,
     private colorService: ColorService,
     private imageService: ImageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private productRefreshService: ProductRefreshService
   ) {}
 
   ngOnInit(): void {
     this.setupSearch();
     this.loadProducts();
     this.loadCategories();
+    this.productRefreshService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadProducts();
+      });
+  }
+
+  ionViewWillEnter(): void {
+    // Si vous utilisez Ionic
+    this.loadProducts();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  ngAfterViewInit(): void {
+    // Vérifier si les produits sont vides
+    if (this.products.length === 0) {
+      this.loadProducts();
+    }
   }
   
   setupSearch(): void {
@@ -95,6 +120,7 @@ export class MerchantProductComponent implements OnInit{
           this.products = page.content;
           this.totalPages = page.totalPages;
           this.totalItems = page.totalElements;
+          this.currentPage = page.number;
           this.loadActiveStatus(page.content);
           this.isSearching = false;
         },
@@ -122,6 +148,7 @@ export class MerchantProductComponent implements OnInit{
           this.totalItems = page.totalElements;
           this.currentPage = page.number;
           this.loadActiveStatus(page.content);
+          this.cdr.detectChanges();
         },
       error: (err) => {
         console.error('Error loading products:', err);
@@ -380,37 +407,49 @@ export class MerchantProductComponent implements OnInit{
   }
 
   goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      if (this.searchTerm && this.searchTerm.trim() !== '') {
-        this.searchSubject$.next(this.searchTerm);
-      } else {
-        this.loadProducts();
-      }
-    }
+  if (page < 0 || page >= this.totalPages) {
+    return;
   }
+  
+  // Ne pas faire d'appel si on est déjà sur cette page
+  if (page === this.currentPage) {
+    return;
+  }
+  
+  this.currentPage = page;
+  
+  const request$: Observable<Page<ProductFullDto | ProductDto>> = this.searchTerm && this.searchTerm.trim() !== ''
+    ? this.productService.searchProducts(this.searchTerm, this.currentPage, this.pageSize)
+    : this.productService.getAllProductsFull(this.currentPage, this.pageSize);
+  
+  request$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (pageData: Page<ProductFullDto | ProductDto>) => {
+        this.products = pageData.content;
+        this.totalPages = pageData.totalPages;
+        this.totalItems = pageData.totalElements;
+        this.currentPage = pageData.number;
+        this.loadActiveStatus(pageData.content);
+        this.cdr.detectChanges();
+      },
+      error: (err: Error) => {
+        console.error('Error loading page:', err);
+      }
+    });
+}
 
   previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      if (this.searchTerm && this.searchTerm.trim() !== '') {
-        this.searchSubject$.next(this.searchTerm);
-      } else {
-        this.loadProducts();
-      }
-    }
+  if (this.currentPage > 0) {
+    this.goToPage(this.currentPage - 1);
   }
+}
 
   nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      if (this.searchTerm && this.searchTerm.trim() !== '') {
-        this.searchSubject$.next(this.searchTerm);
-      } else {
-        this.loadProducts();
-      }
-    }
+  if (this.currentPage < this.totalPages - 1) {
+    this.goToPage(this.currentPage + 1); // Utiliser goToPage au lieu de dupliquer la logique
   }
+}
 
   getPageNumbers(): number[] {
     const pages: number[] = [];
@@ -555,5 +594,31 @@ export class MerchantProductComponent implements OnInit{
         console.error('Error deactivating product:', err);
       }
     });
+  }
+
+  openDetailsDrawer(product: ProductFullDto | ProductDto): void {
+    this.viewingProduct = product;
+    this.selectedImage = null;
+    
+    // Set first image as default selected image
+    if (product.images && product.images.length > 0) {
+      this.selectedImage = product.images[0].imageUrl;
+    }
+    
+    this.detailsDrawerVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  closeDetailsDrawer(): void {
+    setTimeout(() => {
+      this.detailsDrawerVisible = false;
+      this.viewingProduct = null;
+      this.selectedImage = null;
+      this.cdr.detectChanges();
+    }, 0);
+  }
+
+  selectImage(imageUrl: string): void {
+    this.selectedImage = imageUrl;
   }
 }

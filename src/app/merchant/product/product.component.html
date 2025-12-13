@@ -60,8 +60,8 @@
                 title="Supprimer">
           <i class="bi bi-trash"></i>
         </button>
-        <button class="btn btn-sm btn-primary" 
-                (click)="deactivateProduct(getProductId(product))" 
+        <button class="btn btn-sm btn-primary"  
+                (click)="openDetailsDrawer(product)"
                 title="Désactiver">
           <i class="bi bi-door-open"></i>
         </button>
@@ -257,4 +257,141 @@
       </button>
     </div>
   </ng-template>
+</nz-drawer>
+
+<!-- Product Details Drawer -->
+<nz-drawer
+  *ngIf="detailsDrawerVisible"
+  [nzBodyStyle]="{ overflow: 'auto' }"
+  [nzMaskClosable]="true"
+  [nzWidth]="700"
+  [nzVisible]="detailsDrawerVisible"
+  nzTitle="Détails du produit"
+  (nzOnClose)="closeDetailsDrawer()">
+  
+  <div *nzDrawerContent>
+    <div class="container-fluid" *ngIf="viewingProduct">
+      
+      <!-- Product Name -->
+      <div class="mb-4">
+        <h4 class="text-primary">{{ viewingProduct.nom }}</h4>
+        <p class="text-muted" *ngIf="viewingProduct.description">
+          {{ viewingProduct.description }}
+        </p>
+      </div>
+
+      <!-- Product Images -->
+      <div class="mb-4">
+        <label class="fw-bold d-block mb-2">Images du produit</label>
+        <div class="row g-2">
+          <div class="col-12" *ngIf="viewingProduct.images && viewingProduct.images.length > 0">
+            <!-- Main Image -->
+            <div class="text-center mb-3">
+              <img [src]="selectedImage || viewingProduct.images[0].imageUrl" 
+                   alt="{{ viewingProduct.nom }}" 
+                   class="img-fluid rounded border"
+                   style="max-height: 400px; width: 100%; object-fit: contain;">
+            </div>
+            
+            <!-- Thumbnail Gallery -->
+            <div class="d-flex gap-2 overflow-auto pb-2" *ngIf="viewingProduct.images.length > 1">
+              <div *ngFor="let image of viewingProduct.images; let i = index" 
+                   class="flex-shrink-0">
+                <img [src]="image.imageUrl" 
+                     [alt]="'Image ' + (i + 1)" 
+                     class="img-thumbnail cursor-pointer"
+                     [class.border-primary]="selectedImage === image.imageUrl"
+                     style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                     (click)="selectImage(image.imageUrl)">
+              </div>
+            </div>
+          </div>
+          <div class="col-12" *ngIf="!viewingProduct.images || viewingProduct.images.length === 0">
+            <img src="assets/images/no-image.png" 
+                 alt="Pas d'image" 
+                 class="img-fluid rounded border"
+                 style="max-height: 300px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Price and Stock -->
+      <div class="row mb-4">
+        <div class="col-6">
+          <label class="fw-bold d-block mb-2">Prix</label>
+          <h5 class="text-success">{{ viewingProduct.prix | currency:'MAD ' }}</h5>
+        </div>
+        <div class="col-6">
+          <label class="fw-bold d-block mb-2">Stock disponible</label>
+          <h5 [class.text-danger]="viewingProduct.stock < 10" 
+              [class.text-warning]="viewingProduct.stock >= 10 && viewingProduct.stock < 50"
+              [class.text-success]="viewingProduct.stock >= 50">
+            {{ viewingProduct.stock }} unités
+          </h5>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      <div class="mb-4" *ngIf="viewingProduct.colors && viewingProduct.colors.length > 0">
+        <label class="fw-bold d-block mb-2">Couleurs disponibles</label>
+        <div class="d-flex flex-wrap gap-3">
+          <div *ngFor="let color of viewingProduct.colors" 
+               class="d-flex align-items-center border rounded p-2">
+            <span class="color-box me-2" 
+                  [style.background-color]="color.colorCode"
+                  style="width: 40px; height: 40px; border-radius: 5px; border: 2px solid #ddd; display: inline-block;"></span>
+            <span class="fw-semibold">{{ color.colorName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sizes -->
+      <div class="mb-4" *ngIf="viewingProduct.sizes && viewingProduct.sizes.length > 0">
+        <label class="fw-bold d-block mb-2">Tailles disponibles</label>
+        <div class="d-flex flex-wrap gap-2">
+          <span *ngFor="let size of viewingProduct.sizes" 
+                class="badge bg-secondary fs-6 px-3 py-2">
+            {{ size.sizeName }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="mb-4">
+        <label class="fw-bold d-block mb-2">Catégorie</label>
+        <span class="badge bg-info fs-6 px-3 py-2">
+          {{ getCategorieName(viewingProduct) }}
+        </span>
+      </div>
+
+      <!-- Status -->
+      <div class="mb-4">
+        <div class="row">
+          <div class="col-6">
+            <label class="fw-bold d-block mb-2">Statut</label>
+            <span class="badge fs-6 px-3 py-2"
+                  [class.bg-success]="viewingProduct.status === 'ACTIF'"
+                  [class.bg-danger]="viewingProduct.status === 'INACTIF'">
+              {{ viewingProduct.status }}
+            </span>
+          </div>
+          <div class="col-6">
+            <label class="fw-bold d-block mb-2">Actif pour la vente</label>
+            <span class="badge fs-6 px-3 py-2"
+                  [class.bg-success]="viewingProduct.isActiveProduct"
+                  [class.bg-secondary]="!viewingProduct.isActiveProduct">
+              {{ viewingProduct.isActiveProduct ? 'Oui' : 'Non' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date Created -->
+      <div class="mb-4">
+        <label class="fw-bold d-block mb-2">Date de création</label>
+        <p class="text-muted">{{ getDateCreated(viewingProduct) | date:'full' }}</p>
+      </div>
+
+    </div>
+  </div>
 </nz-drawer>

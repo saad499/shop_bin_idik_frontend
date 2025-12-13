@@ -45,3 +45,56 @@
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
+
+/* Cursor pointer for clickable elements */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Image thumbnail hover effect */
+.img-thumbnail {
+  transition: all 0.3s ease;
+}
+
+.img-thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.img-thumbnail.border-primary {
+  border-width: 3px !important;
+}
+
+/* Color box styling */
+.color-box {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge styling */
+.badge.fs-6 {
+  font-weight: 500;
+}
+
+/* Scrollbar styling for thumbnail gallery */
+.overflow-auto::-webkit-scrollbar {
+  height: 6px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Main image container */
+.img-fluid.rounded.border {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}

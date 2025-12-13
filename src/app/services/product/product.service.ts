@@ -26,9 +26,9 @@ export class ProductService {
     });
   }
 
-  deactivate(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/activate-desactivate`, null, { 
-      params: new HttpParams().set('id', id) 
+  deactivate(id: number): Observable<ProductDto> {
+    return this.http.post<ProductDto>(`${this.apiUrl}/activate-desactivate`, null, {
+      params: { id: id.toString() }
     });
   }
 
