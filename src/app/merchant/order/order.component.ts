@@ -2,7 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-import { Order } from '../../dto/Order';
+import { OrderDetailDto } from '../../dto/OrderDetailDto';
+import { StatusOrder } from '../../enum/StatusOrder';
+import { OrderService } from '../../service/order/order.service';
 
 @Component({
   selector: 'app-merchant-order',
@@ -16,7 +18,7 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private searchSubject$ = new Subject<string>();
 
-  orders: Order[] = [];
+  orders: OrderDetailDto[] = [];
   searchTerm: string = '';
   selectedStatus: string = '';
   
@@ -25,6 +27,14 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
   pageSize: number = 10;
   totalPages: number = 0;
   totalItems: number = 0;
+
+  isLoading: boolean = false;
+
+  // Expose enum to template
+  StatusOrder = StatusOrder;
+
+  constructor(private orderService: OrderService) {}
+
   ngOnInit(): void {
     this.setupSearch();
     this.loadOrders();
@@ -34,7 +44,6 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-
 
   setupSearch(): void {
     this.searchSubject$
@@ -53,10 +62,31 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
   }
 
   loadOrders(): void {
-    // TODO: Remplacer par un appel API réel
-    this.orders = this.getMockOrders();
-    this.totalItems = this.orders.length;
-    this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+    this.isLoading = true;
+    
+    // If a status is selected, use the filter API, otherwise get all orders
+    const apiCall = this.selectedStatus 
+      ? this.orderService.getOrdersByStatus(this.selectedStatus as StatusOrder, this.currentPage, this.pageSize)
+      : this.orderService.getAllOrdersWithDetails(this.currentPage, this.pageSize);
+
+    apiCall
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.orders = response.content.map(order => ({
+            ...order,
+            orderDate: new Date(order.orderDate)
+          }));
+          this.totalItems = response.totalElements;
+          this.totalPages = response.totalPages;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading orders:', error);
+          this.isLoading = false;
+          alert('Erreur lors du chargement des commandes');
+        }
+      });
   }
 
   searchOrders(term: string): void {
@@ -65,62 +95,68 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
   }
 
   filterByStatus(): void {
-    // TODO: Implémenter le filtre par statut
-    console.log('Filtering by status:', this.selectedStatus);
+    this.currentPage = 0; // Reset to first page when filtering
+    this.loadOrders();
   }
 
-  getStatusClass(status: string): string {
-    const statusClasses: { [key: string]: string } = {
-      'EN_ATTENTE': 'bg-warning',
-      'CONFIRMEE': 'bg-info',
-      'EN_PREPARATION': 'bg-primary',
-      'EXPEDIEE': 'bg-success',
-      'LIVREE': 'bg-success',
-      'ANNULEE': 'bg-danger'
+  getStatusClass(status: StatusOrder): string {
+    const statusClasses: { [key in StatusOrder]: string } = {
+      [StatusOrder.EN_TRAITEMENT]: 'bg-warning',
+      [StatusOrder.PREPAREE]: 'bg-info',
+      [StatusOrder.EXPEDIEE]: 'bg-primary',
+      [StatusOrder.LIVREE]: 'bg-success'
     };
     return statusClasses[status] || 'bg-secondary';
   }
 
-  getStatusLabel(status: string): string {
-    const statusLabels: { [key: string]: string } = {
-      'EN_ATTENTE': 'En attente',
-      'CONFIRMEE': 'Confirmée',
-      'EN_PREPARATION': 'En préparation',
-      'EXPEDIEE': 'Expédiée',
-      'LIVREE': 'Livrée',
-      'ANNULEE': 'Annulée'
+  getStatusLabel(status: StatusOrder): string {
+    const statusLabels: { [key in StatusOrder]: string } = {
+      [StatusOrder.EN_TRAITEMENT]: 'En traitement',
+      [StatusOrder.PREPAREE]: 'Préparée',
+      [StatusOrder.EXPEDIEE]: 'Expédiée',
+      [StatusOrder.LIVREE]: 'Livrée'
     };
     return statusLabels[status] || status;
   }
 
-  validateOrder(orderId: number): void {
+  validateOrder(numberOrder: number): void {
     if (confirm('Voulez-vous valider cette commande?')) {
-      console.log('Validating order:', orderId);
-      alert('Commande validée avec succès!');
+      this.updateOrderStatus(numberOrder, StatusOrder.PREPAREE);
     }
   }
 
-  viewOrderDetails(orderId: number): void {
+  viewOrderDetails(numberOrder: number): void {
     // TODO: Ouvrir un drawer ou naviguer vers les détails
-    console.log('Viewing order details:', orderId);
+    console.log('Viewing order details:', numberOrder);
   }
 
-  updateOrderStatus(orderId: number, newStatus: string): void {
+  updateOrderStatus(numberOrder: number, newStatus: StatusOrder): void {
     if (confirm(`Voulez-vous changer le statut de cette commande?`)) {
-      // TODO: Appel API pour mettre à jour le statut
-      console.log('Updating order status:', orderId, newStatus);
-      alert('Statut mis à jour avec succès!');
-      this.loadOrders();
+      this.orderService.updateOrderStatus(numberOrder, newStatus)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            alert('Statut mis à jour avec succès!');
+            this.loadOrders();
+          },
+          error: (error) => {
+            console.error('Error updating order status:', error);
+            alert('Erreur lors de la mise à jour du statut');
+          }
+        });
     }
   }
 
-  cancelOrder(orderId: number): void {
+  cancelOrder(numberOrder: number): void {
     if (confirm('Voulez-vous vraiment annuler cette commande?')) {
-      // TODO: Appel API pour annuler la commande
-      console.log('Canceling order:', orderId);
-      alert('Commande annulée avec succès!');
-      this.loadOrders();
+      // TODO: Implémenter l'annulation si disponible dans l'API
+      console.log('Canceling order:', numberOrder);
+      alert('Fonctionnalité d\'annulation non disponible');
     }
+  }
+
+  getClientFullName(order: OrderDetailDto): string {
+    return `${order.clientPrenom} ${order.clientNom}`;
   }
 
   // Pagination methods
@@ -159,42 +195,18 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
     return pages;
   }
 
-  // Mock data - À remplacer par de vraies données API
-  private getMockOrders(): Order[] {
-    return [
-      {
-        id: 1001,
-        dateCommande: new Date(),
-        status: 'EN_ATTENTE',
-        items: [
-          {
-            productId: 1,
-            productName: 'T-Shirt Premium',
-            productDescription: 'T-shirt en coton bio, couleur noir',
-            productImage: 'assets/images/product1.jpg',
-            price: 100.00,
-            quantity: 3
-          },
-          {
-            productId: 2,
-            productName: 'Pantalon Chino',
-            productDescription: 'Pantalon chino slim fit, couleur beige',
-            productImage: 'assets/images/product2.jpg',
-            price: 100.00,
-            quantity: 4
-          }
-        ],
-        totalProduits: 700.00,
-        totalHT: 583.33,
-        totalTaxes: 116.67,
-        totalTTC: 700.00,
-        clientName: 'Mohammed ALAMI',
-        clientEmail: 'mohammed.alami@email.com',
-        clientPhone: '+212 6 12 34 56 78',
-        shippingAddress: '123 Rue principale',
-        shippingCity: 'Casablanca',
-        shippingZipCode: '20000'
-      }
-    ];
+  getDrawerWidth(): string | number {
+    const width = window.innerWidth;
+    if (width < 576) {
+      return '100%';
+    } else if (width < 768) {
+      return '100%';
+    } else if (width < 992) {
+      return 720;
+    } else if (width < 1200) {
+      return 720;
+    } else {
+      return 800;
+    }
   }
 }

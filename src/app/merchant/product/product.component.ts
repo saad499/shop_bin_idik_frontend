@@ -621,4 +621,19 @@ export class MerchantProductComponent implements OnInit{
   selectImage(imageUrl: string): void {
     this.selectedImage = imageUrl;
   }
+
+  getDrawerWidth(): string | number {
+    const width = window.innerWidth;
+    if (width < 576) {
+      return '100%'; // xs: mobile
+    } else if (width < 768) {
+      return '100%'; // sm: tablet portrait
+    } else if (width < 992) {
+      return 720; // md: tablet landscape
+    } else if (width < 1200) {
+      return 720; // lg: desktop
+    } else {
+      return 800; // xl: large desktop
+    }
+  }
 }

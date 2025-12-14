@@ -14,12 +14,10 @@
             style="width: 300px;">
           <select class="form-select" [(ngModel)]="selectedStatus" (change)="filterByStatus()" style="width: 200px;">
             <option value="">Tous les statuts</option>
-            <option value="EN_ATTENTE">En attente</option>
-            <option value="CONFIRMEE">Confirmée</option>
-            <option value="EN_PREPARATION">En préparation</option>
+            <option value="EN_TRAITEMENT">En traitement</option>
+            <option value="PREPAREE">Préparée</option>
             <option value="EXPEDIEE">Expédiée</option>
             <option value="LIVREE">Livrée</option>
-            <option value="ANNULEE">Annulée</option>
           </select>
         </div>
       </div>
@@ -29,16 +27,16 @@
   <!-- Liste des commandes -->
   <div class="row">
     <div class="col-md-12">
-      <div class="card shadow-sm" *ngFor="let order of orders">
+      <div class="card shadow-sm mb-3" *ngFor="let order of orders">
         <div class="card-header bg-white border-bottom">
           <div class="row align-items-center">
             <div class="col-md-8">
-              <h5 class="mb-0">Commande #{{ order.id }}</h5>
-              <small class="text-muted">{{ order.dateCommande | date:'dd/MM/yyyy HH:mm' }}</small>
+              <h5 class="mb-0">Commande #{{ order.numberOrder }}</h5>
+              <small class="text-muted">{{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}</small>
             </div>
             <div class="col-md-4 text-end">
-              <span class="badge fs-6 px-3 py-2" [ngClass]="getStatusClass(order.status)">
-                {{ getStatusLabel(order.status) }}
+              <span class="badge fs-6 px-3 py-2" [ngClass]="getStatusClass(order.orderStatus)">
+                {{ getStatusLabel(order.orderStatus) }}
               </span>
             </div>
           </div>
@@ -52,6 +50,8 @@
                 <tr>
                   <th style="width: 80px;"></th>
                   <th>Description</th>
+                  <th class="text-center">Taille</th>
+                  <th class="text-center">Couleur</th>
                   <th class="text-center">Disponibilité</th>
                   <th class="text-center">Prix</th>
                   <th class="text-center">Quantité</th>
@@ -72,14 +72,28 @@
                     <small class="text-muted">{{ item.productDescription }}</small>
                   </td>
                   <td class="text-center">
-                    <span class="badge bg-success">En stock</span>
+                    <span class="badge bg-secondary">{{ item.sizeName }}</span>
                   </td>
-                  <td class="text-center">{{ item.price | currency:'MAD ' }}</td>
                   <td class="text-center">
-                    <span class="badge bg-secondary">{{ item.quantity }}</span>
+                    <div class="d-flex align-items-center justify-content-center">
+                      <span class="color-preview me-1" 
+                            [style.background-color]="item.colorCode"
+                            style="width: 20px; height: 20px; border-radius: 3px; border: 1px solid #ddd; display: inline-block;"></span>
+                      <small>{{ item.colorName }}</small>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge" 
+                          [ngClass]="item.disponibilite > 0 ? 'bg-success' : 'bg-danger'">
+                      {{ item.disponibilite > 0 ? 'En stock' : 'Rupture' }}
+                    </span>
+                  </td>
+                  <td class="text-center">{{ item.prix | currency:'MAD ' }}</td>
+                  <td class="text-center">
+                    <span class="badge bg-secondary">{{ item.quantite }}</span>
                   </td>
                   <td class="text-end">
-                    <strong>{{ item.price * item.quantity | currency:'MAD ' }}</strong>
+                    <strong>{{ item.total | currency:'MAD ' }}</strong>
                   </td>
                 </tr>
               </tbody>
@@ -91,28 +105,17 @@
             <div class="col-md-8"></div>
             <div class="col-md-4">
               <div class="border rounded p-3 bg-light">
-                <div class="d-flex justify-content-between mb-2">
-                  <span>TOTAL PRODUITS :</span>
-                  <strong>{{ order.totalProduits | currency:'MAD ' }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span>TOTAL HT :</span>
-                  <strong>{{ order.totalHT | currency:'MAD ' }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span>TOTAL TAXES :</span>
-                  <strong>{{ order.totalTaxes | currency:'MAD ' }}</strong>
-                </div>
-                <hr>
                 <div class="d-flex justify-content-between">
-                  <span class="fs-5"><strong>TOTAL TTC :</strong></span>
-                  <span class="fs-5 text-primary"><strong>{{ order.totalTTC | currency:'MAD ' }}</strong></span>
+                  <span class="fs-5"><strong>TOTAL :</strong></span>
+                  <span class="fs-5 text-primary"><strong>{{ order.total | currency:'MAD ' }}</strong></span>
                 </div>
               </div>
               
-              <button class="btn btn-primary w-100 mt-3" (click)="validateOrder(order.id)">
+              <button class="btn btn-primary w-100 mt-3" 
+                      (click)="validateOrder(order.numberOrder)"
+                      *ngIf="order.orderStatus === 'EN_TRAITEMENT'">
                 <i class="bi bi-check-circle me-2"></i>
-                VALIDER VOTRE COMMANDE
+                VALIDER LA COMMANDE
               </button>
             </div>
           </div>
@@ -121,14 +124,13 @@
           <div class="row mt-3">
             <div class="col-md-6">
               <h6 class="text-muted mb-2">Informations client</h6>
-              <p class="mb-1"><strong>{{ order.clientName }}</strong></p>
+              <p class="mb-1"><strong>{{ getClientFullName(order) }}</strong></p>
               <p class="mb-1"><i class="bi bi-envelope me-2"></i>{{ order.clientEmail }}</p>
-              <p class="mb-1"><i class="bi bi-telephone me-2"></i>{{ order.clientPhone }}</p>
+              <p class="mb-1"><i class="bi bi-telephone me-2"></i>{{ order.clientTelephone }}</p>
             </div>
             <div class="col-md-6">
               <h6 class="text-muted mb-2">Adresse de livraison</h6>
-              <p class="mb-1">{{ order.shippingAddress }}</p>
-              <p class="mb-1">{{ order.shippingCity }}, {{ order.shippingZipCode }}</p>
+              <p class="mb-1">{{ order.clientAdresse }}</p>
             </div>
           </div>
 
@@ -136,28 +138,23 @@
           <div class="row mt-3">
             <div class="col-md-12">
               <div class="btn-group" role="group">
-                <button class="btn btn-sm btn-outline-primary" (click)="viewOrderDetails(order.id)">
+                <button class="btn btn-sm btn-outline-primary" (click)="viewOrderDetails(order.numberOrder)">
                   <i class="bi bi-eye me-1"></i> Détails
                 </button>
                 <button class="btn btn-sm btn-outline-success" 
-                        (click)="updateOrderStatus(order.id, 'CONFIRMEE')"
-                        *ngIf="order.status === 'EN_ATTENTE'">
-                  <i class="bi bi-check-circle me-1"></i> Confirmer
+                        (click)="updateOrderStatus(order.numberOrder, StatusOrder.PREPAREE)"
+                        *ngIf="order.orderStatus === 'EN_TRAITEMENT'">
+                  <i class="bi bi-check-circle me-1"></i> Préparer
                 </button>
                 <button class="btn btn-sm btn-outline-info" 
-                        (click)="updateOrderStatus(order.id, 'EN_PREPARATION')"
-                        *ngIf="order.status === 'CONFIRMEE'">
-                  <i class="bi bi-box-seam me-1"></i> En préparation
-                </button>
-                <button class="btn btn-sm btn-outline-warning" 
-                        (click)="updateOrderStatus(order.id, 'EXPEDIEE')"
-                        *ngIf="order.status === 'EN_PREPARATION'">
+                        (click)="updateOrderStatus(order.numberOrder, StatusOrder.EXPEDIEE)"
+                        *ngIf="order.orderStatus === 'PREPAREE'">
                   <i class="bi bi-truck me-1"></i> Expédier
                 </button>
-                <button class="btn btn-sm btn-outline-danger" 
-                        (click)="cancelOrder(order.id)"
-                        *ngIf="order.status !== 'LIVREE' && order.status !== 'ANNULEE'">
-                  <i class="bi bi-x-circle me-1"></i> Annuler
+                <button class="btn btn-sm btn-outline-success" 
+                        (click)="updateOrderStatus(order.numberOrder, StatusOrder.LIVREE)"
+                        *ngIf="order.orderStatus === 'EXPEDIEE'">
+                  <i class="bi bi-box-check me-1"></i> Marquer comme livrée
                 </button>
               </div>
             </div>
@@ -166,10 +163,18 @@
       </div>
 
       <!-- Message si aucune commande -->
-      <div class="alert alert-info text-center" *ngIf="orders.length === 0">
+      <div class="alert alert-info text-center" *ngIf="orders.length === 0 && !isLoading">
         <i class="bi bi-inbox fs-1 d-block mb-3"></i>
         <h5>Aucune commande trouvée</h5>
         <p class="text-muted">Les commandes de vos clients apparaîtront ici.</p>
+      </div>
+
+      <!-- Loading spinner -->
+      <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-2 text-muted">Chargement des commandes...</p>
       </div>
     </div>
   </div>
