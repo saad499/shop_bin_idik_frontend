@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -24,7 +24,7 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
   
   // Pagination
   currentPage: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 5;
   totalPages: number = 0;
   totalItems: number = 0;
 
@@ -33,7 +33,12 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
   // Expose enum to template
   StatusOrder = StatusOrder;
 
-  constructor(private orderService: OrderService) {}
+  expandedOrders: Set<number> = new Set<number>();
+
+  constructor(
+    private orderService: OrderService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.setupSearch();
@@ -61,25 +66,37 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
     this.searchSubject$.next(searchTerm);
   }
 
-  loadOrders(): void {
+  loadOrders(page?: number): void {
     this.isLoading = true;
+    
+    // Use the provided page or current page
+    const pageToLoad = page !== undefined ? page : this.currentPage;
+    
+    // Update currentPage immediately to prevent double-click issues
+    this.currentPage = pageToLoad;
+    
+    console.log('Loading orders for page:', pageToLoad); // Debug log
     
     // If a status is selected, use the filter API, otherwise get all orders
     const apiCall = this.selectedStatus 
-      ? this.orderService.getOrdersByStatus(this.selectedStatus as StatusOrder, this.currentPage, this.pageSize)
-      : this.orderService.getAllOrdersWithDetails(this.currentPage, this.pageSize);
+      ? this.orderService.getOrdersByStatus(this.selectedStatus as StatusOrder, pageToLoad, this.pageSize)
+      : this.orderService.getAllOrdersWithDetails(pageToLoad, this.pageSize);
 
     apiCall
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          console.log('Received orders:', response.content.length, 'for page:', response.number); // Debug log
           this.orders = response.content.map(order => ({
             ...order,
             orderDate: new Date(order.orderDate)
           }));
           this.totalItems = response.totalElements;
           this.totalPages = response.totalPages;
+          this.currentPage = response.number; // Confirm with response
           this.isLoading = false;
+          this.cdr.detectChanges(); // Force change detection
+          console.log('Current page updated to:', this.currentPage); // Debug log
         },
         error: (error) => {
           console.error('Error loading orders:', error);
@@ -96,7 +113,7 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
 
   filterByStatus(): void {
     this.currentPage = 0; // Reset to first page when filtering
-    this.loadOrders();
+    this.loadOrders(0);
   }
 
   getStatusClass(status: StatusOrder): string {
@@ -130,13 +147,14 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
     console.log('Viewing order details:', numberOrder);
   }
 
-  updateOrderStatus(numberOrder: number, newStatus: StatusOrder): void {
-    if (confirm(`Voulez-vous changer le statut de cette commande?`)) {
-      this.orderService.updateOrderStatus(numberOrder, newStatus)
+  progressOrder(numberOrder: number, currentStatus: StatusOrder): void {
+    const nextStatusLabel = this.getNextStatusLabel(currentStatus);
+    if (confirm(`Voulez-vous faire progresser cette commande vers "${nextStatusLabel}"?`)) {
+      this.orderService.progressOrderStatus(numberOrder)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => {
-            alert('Statut mis à jour avec succès!');
+          next: (updatedOrder) => {
+            alert(`Statut mis à jour avec succès vers "${this.getStatusLabel(updatedOrder.orderStatus)}"!`);
             this.loadOrders();
           },
           error: (error) => {
@@ -145,6 +163,24 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
           }
         });
     }
+  }
+
+  getNextStatusLabel(currentStatus: StatusOrder): string {
+    switch (currentStatus) {
+      case StatusOrder.EN_TRAITEMENT:
+        return 'Préparée';
+      case StatusOrder.PREPAREE:
+        return 'Expédiée';
+      case StatusOrder.EXPEDIEE:
+        return 'Livrée';
+      default:
+        return '';
+    }
+  }
+
+  // Keep updateOrderStatus for backward compatibility if needed
+  updateOrderStatus(numberOrder: number, newStatus: StatusOrder): void {
+    this.progressOrder(numberOrder, newStatus);
   }
 
   cancelOrder(numberOrder: number): void {
@@ -159,23 +195,41 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
     return `${order.clientPrenom} ${order.clientNom}`;
   }
 
+  toggleOrderDetails(orderNumber: number): void {
+    if (this.expandedOrders.has(orderNumber)) {
+      this.expandedOrders.delete(orderNumber);
+    } else {
+      this.expandedOrders.add(orderNumber);
+    }
+  }
+
+  isOrderExpanded(orderNumber: number): boolean {
+    return this.expandedOrders.has(orderNumber);
+  }
+
   // Pagination methods
   goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.loadOrders();
+    console.log('goToPage called with:', page, 'currentPage:', this.currentPage); // Debug log
+    if (page >= 0 && page < this.totalPages && page !== this.currentPage && !this.isLoading) {
+      this.loadOrders(page);
+    } else {
+      console.log('Page change prevented - already on page:', page); // Debug log
     }
   }
 
   previousPage(): void {
-    if (this.currentPage > 0) {
-      this.goToPage(this.currentPage - 1);
+    const targetPage = this.currentPage - 1;
+    console.log('previousPage called, current:', this.currentPage, 'target:', targetPage); // Debug log
+    if (targetPage >= 0 && targetPage !== this.currentPage && !this.isLoading) {
+      this.loadOrders(targetPage);
     }
   }
 
   nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.goToPage(this.currentPage + 1);
+    const targetPage = this.currentPage + 1;
+    console.log('nextPage called, current:', this.currentPage, 'target:', targetPage); // Debug log
+    if (targetPage < this.totalPages && targetPage !== this.currentPage && !this.isLoading) {
+      this.loadOrders(targetPage);
     }
   }
 

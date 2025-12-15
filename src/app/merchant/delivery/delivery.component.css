@@ -1,1 +1,88 @@
 /* Merchant Delivery styles */
+
+.driver-photo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.driver-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.driver-id {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.rating {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  font-size: 1.1rem;
+}
+
+.pagination-number {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.table td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.form-label.small {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.875rem;
+  }
+  
+  .driver-photo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .driver-id {
+    font-size: 0.75rem;
+  }
+  
+  .rating {
+    font-size: 0.9rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .table th,
+  .table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .pagination-number {
+    font-size: 1.5rem;
+  }
+}

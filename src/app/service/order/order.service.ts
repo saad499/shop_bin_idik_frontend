@@ -21,7 +21,7 @@ export class OrderService {
 
   constructor(private http: HttpClient) {}
 
-  getAllOrdersWithDetails(page: number = 0, size: number = 10): Observable<PageResponse<OrderDetailDto>> {
+  getAllOrdersWithDetails(page: number = 0, size: number = 5): Observable<PageResponse<OrderDetailDto>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
@@ -29,7 +29,7 @@ export class OrderService {
     return this.http.get<PageResponse<OrderDetailDto>>(`${this.apiUrl}/all-details`, { params });
   }
 
-  getOrdersByStatus(status: StatusOrder, page: number = 0, size: number = 10): Observable<PageResponse<OrderDetailDto>> {
+  getOrdersByStatus(status: StatusOrder, page: number = 0, size: number = 5): Observable<PageResponse<OrderDetailDto>> {
     const params = new HttpParams()
       .set('status', status)
       .set('page', page.toString())
@@ -40,5 +40,10 @@ export class OrderService {
 
   updateOrderStatus(numberOrder: number, status: string): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${numberOrder}/status`, { status });
+  }
+
+  progressOrderStatus(orderId: number): Observable<OrderDetailDto> {
+    const params = new HttpParams().set('orderId', orderId.toString());
+    return this.http.post<OrderDetailDto>(`${this.apiUrl}/next-status`, null, { params });
   }
 }
