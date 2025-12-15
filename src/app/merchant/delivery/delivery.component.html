@@ -9,21 +9,21 @@
   <!-- Search Filters -->
   <div class="row mb-4 g-3">
     <div class="col-12 col-md-4">
-      <label class="form-label small text-muted">Recherche par nom</label>
+      <label class="form-label small text-muted mb-2">Recherche par nom</label>
       <input 
         type="text" 
         class="form-control" 
         placeholder="Rechercher un livreur...">
     </div>
     <div class="col-12 col-md-4">
-      <label class="form-label small text-muted">Zonne / Ville</label>
+      <label class="form-label small text-muted mb-2">Zone / Ville</label>
       <input 
         type="text" 
         class="form-control" 
         placeholder="Ville...">
     </div>
     <div class="col-12 col-md-4">
-      <label class="form-label small text-muted">Type de véhicule</label>
+      <label class="form-label small text-muted mb-2">Type de véhicule</label>
       <input 
         type="text" 
         class="form-control" 
@@ -206,5 +206,42 @@
     </table>
   </div>
 
- 
+  <!-- Pagination -->
+  <div class="row mt-3 g-2">
+    <div class="col-12 col-md-6 text-center text-md-start">
+      <p class="text-muted mb-2 mb-md-0 small">
+        Affichage de 1 à 5 sur 16 livreurs
+      </p>
+    </div>
+    <div class="col-12 col-md-6">
+      <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm justify-content-center justify-content-md-end mb-0">
+          <li class="page-item disabled">
+            <a class="page-link" style="cursor: pointer;" tabindex="-1">
+              <span class="d-none d-sm-inline">Précédent</span>
+              <span class="d-sm-none">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item active">
+            <a class="page-link" style="cursor: pointer;">1</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" style="cursor: pointer;">2</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" style="cursor: pointer;">3</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" style="cursor: pointer;">4</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" style="cursor: pointer;">
+              <span class="d-none d-sm-inline">Suivant</span>
+              <span class="d-sm-none">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
 </div>
