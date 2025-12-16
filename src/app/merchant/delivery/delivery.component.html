@@ -49,221 +49,93 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Driver 1 - Disponible -->
-        <tr>
+        <tr *ngFor="let delivery of deliveries">
           <td class="text-center">
             <div class="driver-photo-container">
-              <img src="assets/images/avatar-placeholder.png" 
+              <img [src]="delivery.photo || 'assets/images/avatar-placeholder.png'" 
                    alt="Driver" 
                    class="driver-photo">
-              <span class="driver-id">1245878</span>
+              <span class="driver-id">{{ delivery.id }}</span>
             </div>
           </td>
-          <td class="text-center fw-semibold">Nom Prénom</td>
+          <td class="text-center fw-semibold">{{ delivery.nomComplet }}</td>
           <td class="text-center">
             <div class="rating">
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star text-warning"></i>
+              <i *ngFor="let filled of getStarArray(delivery.note)" 
+                 class="bi" 
+                 [class.bi-star-fill]="filled"
+                 [class.bi-star]="!filled"
+                 class="text-warning"></i>
             </div>
           </td>
           <td class="text-center">
-            <span class="badge bg-info">
-              <i class="bi bi-bicycle me-1"></i> Vélo
+            <span class="badge" [ngClass]="getVehicleBadgeClass(delivery.typeVehicule)">
+              <i class="bi bi-{{ getVehicleIcon(delivery.typeVehicule) }} me-1"></i>
+              {{ delivery.typeVehicule }}
             </span>
           </td>
-          <td class="text-center">20 min</td>
+          <td class="text-center">{{ delivery.delai }}</td>
           <td class="text-center">
-            <span class="badge bg-success">Disponible</span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm">
-              Choisir livreur
-            </button>
-          </td>
-        </tr>
-
-        <!-- Driver 2 - Occupé -->
-        <tr>
-          <td class="text-center">
-            <div class="driver-photo-container">
-              <img src="assets/images/avatar-placeholder.png" 
-                   alt="Driver" 
-                   class="driver-photo">
-              <span class="driver-id">1245878</span>
-            </div>
-          </td>
-          <td class="text-center fw-semibold">Nom Prénom</td>
-          <td class="text-center">
-            <div class="rating">
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star text-warning"></i>
-            </div>
-          </td>
-          <td class="text-center">
-            <span class="badge bg-warning text-dark">
-              <i class="bi bi-scooter me-1"></i> Moto
+            <span class="badge" 
+                  [class.bg-success]="isDriverAvailable(delivery)"
+                  [class.bg-secondary]="!isDriverAvailable(delivery)">
+              {{ delivery.status }}
             </span>
           </td>
-          <td class="text-center">20 min</td>
           <td class="text-center">
-            <span class="badge bg-secondary">Occupé</span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm" disabled>
-              Choisir livreur
-            </button>
-          </td>
-        </tr>
-
-        <!-- Driver 3 - Disponible -->
-        <tr>
-          <td class="text-center">
-            <div class="driver-photo-container">
-              <img src="assets/images/avatar-placeholder.png" 
-                   alt="Driver" 
-                   class="driver-photo">
-              <span class="driver-id">1245878</span>
-            </div>
-          </td>
-          <td class="text-center fw-semibold">Nom Prénom</td>
-          <td class="text-center">
-            <div class="rating">
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star text-warning"></i>
-            </div>
-          </td>
-          <td class="text-center">
-            <span class="badge bg-primary">
-              <i class="bi bi-car-front me-1"></i> Voiture
-            </span>
-          </td>
-          <td class="text-center">20 min</td>
-          <td class="text-center">
-            <span class="badge bg-success">Disponible</span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm">
-              Choisir livreur
-            </button>
-          </td>
-        </tr>
-
-        <!-- Driver 4 - Occupé -->
-        <tr>
-          <td class="text-center">
-            <div class="driver-photo-container">
-              <img src="assets/images/avatar-placeholder.png" 
-                   alt="Driver" 
-                   class="driver-photo">
-              <span class="driver-id">1245878</span>
-            </div>
-          </td>
-          <td class="text-center fw-semibold">Nom Prénom</td>
-          <td class="text-center">
-            <div class="rating">
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star text-warning"></i>
-            </div>
-          </td>
-          <td class="text-center">
-            <span class="badge bg-info">
-              <i class="bi bi-bicycle me-1"></i> Vélo
-            </span>
-          </td>
-          <td class="text-center">20 min</td>
-          <td class="text-center">
-            <span class="badge bg-secondary">Occupé</span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm" disabled>
-              Choisir livreur
-            </button>
-          </td>
-        </tr>
-
-        <!-- Driver 5 - Disponible -->
-        <tr>
-          <td class="text-center">
-            <div class="driver-photo-container">
-              <img src="assets/images/avatar-placeholder.png" 
-                   alt="Driver" 
-                   class="driver-photo">
-              <span class="driver-id">1245878</span>
-            </div>
-          </td>
-          <td class="text-center fw-semibold">Nom Prénom</td>
-          <td class="text-center">
-            <div class="rating">
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star-fill text-warning"></i>
-              <i class="bi bi-star text-warning"></i>
-            </div>
-          </td>
-          <td class="text-center">
-            <span class="badge bg-warning text-dark">
-              <i class="bi bi-scooter me-1"></i> Moto
-            </span>
-          </td>
-          <td class="text-center">20 min</td>
-          <td class="text-center">
-            <span class="badge bg-success">Disponible</span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm">
+            <button class="btn btn-outline-primary btn-sm" 
+                    (click)="openDriverDrawer(delivery)"
+                    [disabled]="!isDriverAvailable(delivery)">
               Choisir livreur
             </button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Loading spinner -->
+    <div class="text-center py-5" *ngIf="isLoading">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="mt-2 text-muted">Chargement des livreurs...</p>
+    </div>
+
+    <!-- No data message -->
+    <div class="alert alert-info text-center" *ngIf="deliveries.length === 0 && !isLoading">
+      <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+      <h5>Aucun livreur trouvé</h5>
+      <p class="text-muted">Les livreurs disponibles apparaîtront ici.</p>
+    </div>
   </div>
 
   <!-- Pagination -->
-  <div class="row mt-3 g-2">
+  <div class="row mt-3 g-2" *ngIf="deliveries.length > 0">
     <div class="col-12 col-md-6 text-center text-md-start">
       <p class="text-muted mb-2 mb-md-0 small">
-        Affichage de 1 à 5 sur 16 livreurs
+        Affichage de {{ currentPage * pageSize + 1 }} à 
+        {{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }} 
+        sur {{ totalItems }} livreurs
       </p>
     </div>
     <div class="col-12 col-md-6">
       <nav aria-label="Page navigation">
         <ul class="pagination pagination-sm justify-content-center justify-content-md-end mb-0">
-          <li class="page-item disabled">
-            <a class="page-link" style="cursor: pointer;" tabindex="-1">
-              <span class="d-none d-sm-inline">Précédent</span>
-              <span class="d-sm-none">&laquo;</span>
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="previousPage()" style="cursor: pointer;" tabindex="-1">
+              <i class="bi bi-chevron-left"></i> <span class="d-none d-sm-inline">Précédent</span>
             </a>
           </li>
-          <li class="page-item active">
-            <a class="page-link" style="cursor: pointer;">1</a>
+          <li class="page-item" 
+              *ngFor="let page of getPageNumbers()"
+              [class.active]="page === currentPage">
+            <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">
+              {{ page + 1 }}
+            </a>
           </li>
-          <li class="page-item">
-            <a class="page-link" style="cursor: pointer;">2</a>
-          </li>
-          <li class="page-item">
-            <a class="page-link" style="cursor: pointer;">3</a>
-          </li>
-          <li class="page-item">
-            <a class="page-link" style="cursor: pointer;">4</a>
-          </li>
-          <li class="page-item">
-            <a class="page-link" style="cursor: pointer;">
-              <span class="d-none d-sm-inline">Suivant</span>
-              <span class="d-sm-none">&raquo;</span>
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" (click)="nextPage()" style="cursor: pointer;">
+              <span class="d-none d-sm-inline">Suivant</span> <i class="bi bi-chevron-right"></i>
             </a>
           </li>
         </ul>
@@ -271,3 +143,117 @@
     </div>
   </div>
 </div>
+
+<!-- Driver Selection Offcanvas (Bootstrap alternative) -->
+<div class="offcanvas offcanvas-end" 
+     [class.show]="driverDrawerVisible" 
+     [style.visibility]="driverDrawerVisible ? 'visible' : 'hidden'"
+     tabindex="-1">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Détails du livreur</h5>
+    <button type="button" class="btn-close" (click)="closeDriverDrawer()"></button>
+  </div>
+  <div class="offcanvas-body" *ngIf="selectedDriver">
+    <div class="text-center mb-4">
+      <img [src]="selectedDriver.photo || 'assets/images/avatar-placeholder.png'" 
+           alt="Driver" 
+           class="driver-detail-photo mb-3">
+      <h5 class="mb-1">{{ selectedDriver.nomComplet }}</h5>
+    </div>
+
+    <div class="driver-details mb-4">
+      <div class="detail-row mb-3">
+        <label class="detail-label">Note</label>
+        <div class="detail-value">
+          <div class="rating">
+            <i *ngFor="let filled of getStarArray(selectedDriver.note)" 
+               class="bi" 
+               [class.bi-star-fill]="filled"
+               [class.bi-star]="!filled"
+               class="text-warning"></i>
+            <span class="ms-2">({{ selectedDriver.note }}/5)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-row mb-3">
+        <label class="detail-label">Véhicule</label>
+        <div class="detail-value">
+          <span class="badge" [ngClass]="getVehicleBadgeClass(selectedDriver.typeVehicule)">
+            <i class="bi bi-{{ getVehicleIcon(selectedDriver.typeVehicule) }} me-1"></i>
+            {{ selectedDriver.typeVehicule }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-row mb-3">
+        <label class="detail-label">Numéro d'immatriculation</label>
+        <div class="detail-value">
+          <span class="badge bg-dark">{{ selectedDriver.numImmatriculation }}</span>
+        </div>
+      </div>
+
+      <div class="detail-row mb-3">
+        <label class="detail-label">Délai</label>
+        <div class="detail-value">{{ selectedDriver.delai }}</div>
+      </div>
+
+      <!-- Vehicle Photos -->
+      <div class="detail-row mb-3">
+        <label class="detail-label">Photos du véhicule</label>
+        <div class="detail-value">
+          <div class="row g-2">
+            <div class="col-6">
+              <small class="text-muted d-block mb-1">Recto</small>
+              <img [src]="selectedDriver.photoVehiculeRecto || 'assets/images/no-image.png'" 
+                   alt="Véhicule Recto" 
+                   class="img-thumbnail w-100"
+                   style="height: 120px; object-fit: cover; cursor: pointer;"
+                   (click)="viewFullImage(selectedDriver.photoVehiculeRecto)">
+            </div>
+            <div class="col-6">
+              <small class="text-muted d-block mb-1">Verso</small>
+              <img [src]="selectedDriver.photoVehiculeVerso || 'assets/images/no-image.png'" 
+                   alt="Véhicule Verso" 
+                   class="img-thumbnail w-100"
+                   style="height: 120px; object-fit: cover; cursor: pointer;"
+                   (click)="viewFullImage(selectedDriver.photoVehiculeVerso)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-row mb-3">
+        <label class="detail-label">Option</label>
+        <div class="detail-value">
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="contactOption" id="messageOption" autocomplete="off" checked>
+            <label class="btn btn-outline-primary btn-sm" for="messageOption">
+              <i class="bi bi-chat-dots me-1"></i> Message direct
+            </label>
+
+            <input type="radio" class="btn-check" name="contactOption" id="callOption" autocomplete="off">
+            <label class="btn btn-outline-primary btn-sm" for="callOption">
+              <i class="bi bi-telephone me-1"></i> Appel
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2">
+      <button class="btn btn-outline-secondary" (click)="closeDriverDrawer()">
+        Annuler
+      </button>
+      <button class="btn btn-primary" (click)="confirmDriver()">
+        Confirmer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Backdrop -->
+<div class="offcanvas-backdrop fade" 
+     [class.show]="driverDrawerVisible"
+     [style.display]="driverDrawerVisible ? 'block' : 'none'"
+     (click)="closeDriverDrawer()"></div>
