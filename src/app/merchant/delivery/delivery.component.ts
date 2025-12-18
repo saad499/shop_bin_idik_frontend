@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, interval, switchMap } from 'rxjs';
 import { DeliveryDto } from '../../dto/DeliveryDto';
+import { DeliveryRequestDto } from '../../dto/DeliveryRequestDto';
+import { DeliveryRequestResponseDto } from '../../dto/DeliveryRequestResponseDto';
 import { DeliveryService } from '../../service/delivery/delivery.service';
+import { OrderClientInfoDto } from '../../dto/OrderClientInfoDto';
 
 @Component({
   selector: 'app-merchant-delivery',
@@ -19,13 +22,21 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
   driverDrawerVisible = false;
   selectedDriver: DeliveryDto | null = null;
   
-  // Pagination
   currentPage: number = 0;
   pageSize: number = 5;
   totalPages: number = 0;
   totalItems: number = 0;
   
   isLoading: boolean = false;
+
+  // Delivery request properties
+  selectedContactMethod: 'MESSAGE' | 'CALL' = 'MESSAGE';
+  isRequestPending: boolean = false;
+  currentRequestId: number | null = null;
+  requestStatus: string = '';
+
+  ordersEnTraitement: OrderClientInfoDto[] = [];
+  selectedOrder: OrderClientInfoDto | null = null;
 
   constructor(
     private deliveryService: DeliveryService,
@@ -34,6 +45,7 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDeliveries();
+    this.loadOrdersEnTraitement();
   }
 
   ngOnDestroy(): void {
@@ -45,30 +57,39 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const pageToLoad = page !== undefined ? page : this.currentPage;
     
-    // Update currentPage immediately to prevent double-click issues
     this.currentPage = pageToLoad;
-    
-    console.log('Loading deliveries for page:', pageToLoad); // Debug log
+  
     
     this.deliveryService.getAllDeliveries(pageToLoad, this.pageSize)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Received deliveries:', response.content.length, 'for page:', response.number);
-          // Debug: Log status values
-          response.content.forEach(d => console.log('Delivery ID:', d.id, 'Status:', `"${d.status}"`));
           this.deliveries = response.content;
           this.totalPages = response.totalPages;
           this.totalItems = response.totalElements;
-          this.currentPage = response.number; // Confirm with response
+          this.currentPage = response.number;
           this.isLoading = false;
-          this.cdr.detectChanges(); // Force change detection
-          console.log('Current page updated to:', this.currentPage); // Debug log
+          this.cdr.detectChanges();
+          console.log('Current page updated to:', this.currentPage);
         },
         error: (error) => {
           console.error('Error loading deliveries:', error);
           this.isLoading = false;
           alert('Erreur lors du chargement des livreurs');
+        }
+      });
+  }
+
+  loadOrdersEnTraitement(): void {
+    this.deliveryService.getOrdersEnTraitement()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (orders) => {
+          this.ordersEnTraitement = orders;
+          console.log('orders en traitement:', orders);
+        },
+        error: (err) => {
+          console.error('Error loading orders en traitement:', err);
         }
       });
   }
@@ -79,16 +100,43 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
   }
 
-  closeDriverDrawer(): void {
-    this.driverDrawerVisible = false;
-    this.selectedDriver = null;
-    document.body.style.overflow = '';
+  onOrderSelect(order: OrderClientInfoDto): void {
+    this.selectedOrder = order;
   }
 
   confirmDriver(): void {
-    console.log('Driver confirmed:', this.selectedDriver);
-    alert('Livreur confirmé avec succès!');
-    this.closeDriverDrawer();
+    if (!this.selectedDriver || !this.selectedOrder) {
+      alert('Veuillez sélectionner une commande.');
+      return;
+    }
+
+    const request: DeliveryRequestDto = {
+      deliveryId: this.selectedDriver.id,
+      orderId: this.selectedOrder.numberOrder,
+      pickupAddress: "123 Rue Exemple, Casablanca", // Replace with actual pickup address
+      deliveryAddress: "456 Avenue Test, Rabat",    // Replace with actual delivery address
+      contactMethod: this.selectedContactMethod,
+      estimatedPrice: 50 // Replace with actual price if available
+    };
+    console.log('Sending delivery request:', request);
+
+    this.isRequestPending = true;
+    this.requestStatus = 'En attente de réponse du livreur...';
+
+    this.deliveryService.sendDeliveryRequest(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.currentRequestId = response.requestId;
+          console.log('Request sent successfully:', response);
+          this.startStatusPolling();
+        },
+        error: (error) => {
+          console.error('Error sending delivery request:', error);
+          this.isRequestPending = false;
+          alert('Erreur lors de l\'envoi de la demande');
+        }
+      });
   }
 
   viewFullImage(imageUrl: string): void {
@@ -97,19 +145,93 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Pagination methods
+  startStatusPolling(): void {
+    if (!this.currentRequestId) return;
+
+    interval(3000) // Check every 3 seconds
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(() => this.deliveryService.checkRequestStatus(this.currentRequestId!))
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('Request status:', response.status);
+          
+          switch (response.status) {
+            case 'ACCEPTED':
+              this.requestStatus = 'Livreur accepté!';
+              this.isRequestPending = false;
+              alert('Le livreur a accepté votre demande!');
+              this.closeDriverDrawer();
+              this.loadDeliveries(); // Refresh list
+              this.stopStatusPolling();
+              break;
+              
+            case 'REJECTED':
+              this.requestStatus = 'Livreur a refusé';
+              this.isRequestPending = false;
+              alert('Le livreur a refusé votre demande. Veuillez choisir un autre livreur.');
+              this.currentRequestId = null;
+              this.stopStatusPolling();
+              break;
+              
+            case 'CANCELLED':
+              this.requestStatus = 'Demande annulée';
+              this.isRequestPending = false;
+              this.currentRequestId = null;
+              this.stopStatusPolling();
+              break;
+              
+            case 'PENDING':
+              this.requestStatus = 'En attente de réponse...';
+              break;
+          }
+          
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error checking request status:', error);
+        }
+      });
+  }
+
+  stopStatusPolling(): void {
+    // Polling will stop automatically when component is destroyed or unsubscribed
+  }
+
+  cancelRequest(): void {
+    if (confirm('Voulez-vous annuler cette demande?')) {
+      this.isRequestPending = false;
+      this.currentRequestId = null;
+      this.requestStatus = '';
+      this.closeDriverDrawer();
+    }
+  }
+
+  onContactMethodChange(method: 'MESSAGE' | 'CALL'): void {
+    this.selectedContactMethod = method;
+  }
+
+  closeDriverDrawer(): void {
+    this.driverDrawerVisible = false;
+    this.selectedDriver = null;
+    this.isRequestPending = false;
+    this.currentRequestId = null;
+    this.requestStatus = '';
+    document.body.style.overflow = '';
+  }
+
   goToPage(page: number): void {
-    console.log('goToPage called with:', page, 'currentPage:', this.currentPage); // Debug log
     if (page >= 0 && page < this.totalPages && page !== this.currentPage && !this.isLoading) {
       this.loadDeliveries(page);
     } else {
-      console.log('Page change prevented - already on page:', page); // Debug log
+      console.log('Page change prevented - already on page:', page);
     }
   }
 
   previousPage(): void {
     const targetPage = this.currentPage - 1;
-    console.log('previousPage called, current:', this.currentPage, 'target:', targetPage); // Debug log
+    console.log('previousPage called, current:', this.currentPage, 'target:', targetPage);
     if (targetPage >= 0 && !this.isLoading) {
       this.loadDeliveries(targetPage);
     }
@@ -117,7 +239,7 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
 
   nextPage(): void {
     const targetPage = this.currentPage + 1;
-    console.log('nextPage called, current:', this.currentPage, 'target:', targetPage); // Debug log
+    console.log('nextPage called, current:', this.currentPage, 'target:', targetPage);
     if (targetPage < this.totalPages && !this.isLoading) {
       this.loadDeliveries(targetPage);
     }
@@ -163,11 +285,9 @@ export class MerchantDeliveryComponent implements OnInit, OnDestroy {
     return 'bg-info';
   }
 
-  // Add helper method to check if driver is available
   isDriverAvailable(delivery: DeliveryDto): boolean {
     const status = delivery.status?.trim().toLowerCase();
     const isAvailable = status === 'disponible';
-    console.log('Checking availability for', delivery.id, 'Status:', `"${delivery.status}"`, 'Available:', isAvailable);
     return isAvailable;
   }
 }

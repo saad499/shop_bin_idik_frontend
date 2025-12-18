@@ -4,6 +4,7 @@ import { AdministratorComponent } from './administrator/administrator.component'
 import { CustomerComponent } from './customer/customer.component';
 import { DeliveryComponent } from './delivery/delivery.component';
 import { merchantRoutes } from './merchant/merchant.root';
+import { customerRoutes } from './customer/customer.root';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'merchant', pathMatch: 'full' },
@@ -13,6 +14,10 @@ export const routes: Routes = [
     children: merchantRoutes
   },
   { path: 'administrator', component: AdministratorComponent },
-  { path: 'customer', component: CustomerComponent },
+  {
+    path: 'customer',
+    component: CustomerComponent,
+    children: customerRoutes
+  },
   { path: 'delivery', component: DeliveryComponent },
 ];

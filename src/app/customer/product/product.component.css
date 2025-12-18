@@ -1,0 +1,10 @@
+.product-page {
+  padding: 32px;
+  text-align: center;
+}
+.product-page h2 {
+  color: #e64a19;
+}
+.product-page p {
+  color: #666;
+}

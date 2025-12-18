@@ -224,29 +224,79 @@
       </div>
 
       <div class="detail-row mb-3">
-        <label class="detail-label">Option</label>
+        <label class="detail-label">Option de contact</label>
         <div class="detail-value">
           <div class="btn-group w-100" role="group">
-            <input type="radio" class="btn-check" name="contactOption" id="messageOption" autocomplete="off" checked>
+            <input type="radio" 
+                   class="btn-check" 
+                   name="contactOption" 
+                   id="messageOption" 
+                   [value]="'MESSAGE'"
+                   [(ngModel)]="selectedContactMethod"
+                   [disabled]="isRequestPending"
+                   autocomplete="off">
             <label class="btn btn-outline-primary btn-sm" for="messageOption">
               <i class="bi bi-chat-dots me-1"></i> Message direct
             </label>
 
-            <input type="radio" class="btn-check" name="contactOption" id="callOption" autocomplete="off">
+            <input type="radio" 
+                   class="btn-check" 
+                   name="contactOption" 
+                   id="callOption" 
+                   [value]="'CALL'"
+                   [(ngModel)]="selectedContactMethod"
+                   [disabled]="isRequestPending"
+                   autocomplete="off">
             <label class="btn btn-outline-primary btn-sm" for="callOption">
               <i class="bi bi-telephone me-1"></i> Appel
             </label>
           </div>
         </div>
       </div>
+
+      <!-- Orders Dropdown -->
+      <div class="detail-row mb-3">
+        <label class="detail-label">Commande à livrer</label>
+        <div class="detail-value">
+          <select class="form-select"
+                  [(ngModel)]="selectedOrder"
+                  [ngModelOptions]="{standalone: true}">
+            <option [ngValue]="null" disabled selected>Choisir une commande...</option>
+            <option *ngFor="let order of ordersEnTraitement" [ngValue]="order">
+              #{{ order.numberOrder }} - {{ order.firstname }} {{ order.lastname }} ({{ order.totalPrice | number:'1.2-2' }} MAD)
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Request Status -->
+      <div class="alert alert-info mb-3" *ngIf="isRequestPending">
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <span>{{ requestStatus }}</span>
+        </div>
+      </div>
     </div>
 
     <div class="d-grid gap-2">
-      <button class="btn btn-outline-secondary" (click)="closeDriverDrawer()">
-        Annuler
+      <button class="btn btn-outline-secondary" 
+              (click)="closeDriverDrawer()"
+              [disabled]="isRequestPending">
+        {{ isRequestPending ? 'Fermer' : 'Annuler' }}
       </button>
-      <button class="btn btn-primary" (click)="confirmDriver()">
-        Confirmer
+      
+      <button class="btn btn-danger" 
+              *ngIf="isRequestPending"
+              (click)="cancelRequest()">
+        <i class="bi bi-x-circle me-1"></i> Annuler la demande
+      </button>
+      
+      <button class="btn btn-primary" 
+              *ngIf="!isRequestPending"
+              (click)="confirmDriver()">
+        <i class="bi bi-check-circle me-1"></i> Confirmer et envoyer
       </button>
     </div>
   </div>
