@@ -1,4 +1,257 @@
-<div class="landing-page">
-  <h1>Bienvenue sur la page d'accueil</h1>
-  <p>Découvrez nos produits et magasins partenaires.</p>
+<div class="landing-page-container">
+  <div class="main-layout-row">
+    <!-- Sidebar (left, full height) -->
+    <aside class="sidebar custom-sidebar collapsible-sidebar" [class.collapsed]="sidebarCollapsed">
+      <button class="sidebar-toggle" (click)="toggleSidebar()" type="button">
+        <i class="bi" [class.bi-chevron-left]="!sidebarCollapsed" [class.bi-chevron-right]="sidebarCollapsed"></i>
+      </button>
+      <div class="sidebar-header" *ngIf="!sidebarCollapsed">
+        <h3>Catégories</h3>
+      </div>
+      
+      <ul>
+        <li class="main-category">
+          <button>
+            <i class="bi bi-phone"></i> 
+            <span>Téléphone & Tablette</span>
+          </button>
+        </li>
+        <li class="main-category">
+          <button>
+            <i class="bi bi-tv"></i> 
+            <span>TV & HIGH TECH</span>
+          </button>
+        </li>
+        <li class="main-category">
+          <button>
+            <i class="bi bi-laptop"></i> 
+            <span>Informatique</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-house-door"></i> 
+            <span>Maison, cuisine & bureau</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-lightning"></i> 
+            <span>Électroménager</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-bag"></i> 
+            <span>Vêtements & Chaussures</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-heart"></i> 
+            <span>Beauté & Santé</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-controller"></i> 
+            <span>Jeux vidéos & Consoles</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-shop"></i> 
+            <span>Supermarché</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-bicycle"></i> 
+            <span>Sports & Loisirs</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-baby"></i> 
+            <span>Bébé & Jouets</span>
+          </button>
+        </li>
+        <li>
+          <button>
+            <i class="bi bi-three-dots"></i> 
+            <span>Autres catégories</span>
+          </button>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main content (right) -->
+    <div class="main-content">
+      <!-- Hero Section with Carousel -->
+      <section class="hero-section">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1>Découvrez nos meilleures offres</h1>
+            <p>Trouvez les produits de vos marques préférées au meilleur prix</p>
+          </div>
+          <div class="landing-carousel">
+            <button class="carousel-btn prev-btn" (click)="prevImage()" aria-label="Précédent">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="carousel-container">
+              <img [src]="carouselImages[carouselIndex]" [alt]="'Image ' + (carouselIndex + 1)" class="carousel-img" />
+              <div class="carousel-indicators">
+                <span *ngFor="let img of carouselImages; let i = index" 
+                      class="indicator" 
+                      [class.active]="i === carouselIndex"
+                      (click)="goToImage(i)"></span>
+              </div>
+            </div>
+            <button class="carousel-btn next-btn" (click)="nextImage()" aria-label="Suivant">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stores Section -->
+      <section class="magasins-section">
+        <div class="section-header">
+          <h2><i class="bi bi-shop"></i> Nos Magasins Partenaires</h2>
+          <div class="search-container">
+            <input type="text" class="magasin-search" placeholder="Rechercher un magasin..."/>
+            <i class="bi bi-search search-icon"></i>
+          </div>
+        </div>
+        <div class="magasins-carousel">
+          <div class="magasins-list-scroll">
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/pullbear.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>PULL&BEAR</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/decathlon.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>DECATHLON</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/fnac.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>Fnac</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/HM.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>H&M</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/istyle.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>ISTYLE</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/kiabu.jfif" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>KIABI</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/lefties.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>LEFTIES</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/NESPRESSO.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>NESPRESSO</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/virgin.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>VIRGIN</div>
+            </div>
+            <div class="magasin-item">
+              <div class="magasin-img">
+                <img src="assets/images/principe.jpg" alt="Produit 1" class="magasin-img-circular"/>
+              </div>
+              <div>PRINCIPE</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Products Section -->
+      <section class="products-section">
+        <div class="section-header">
+          <h2><i class="bi bi-grid-3x3-gap"></i> Produits Populaires</h2>
+          <div class="search-container">
+            <input type="text" class="product-search" placeholder="Rechercher un produit..."/>
+            <i class="bi bi-search search-icon"></i>
+          </div>
+        </div>
+        <div class="products-carousel">
+          <div class="products-list-scroll">
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/pullbear.jpg" alt="Produit 1" class="product-img-circular"/>
+              </div>
+              <div>PULL&BEAR</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product2.jpg" alt="Produit 2" class="product-img-circular"/>
+              </div>
+              <div>Produit 2</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product3.jpg" alt="Produit 3" class="product-img-circular"/>
+              </div>
+              <div>Produit 3</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product4.jpg" alt="Produit 4" class="product-img-circular"/>
+              </div>
+              <div>Produit 4</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product5.jpg" alt="Produit 5" class="product-img-circular"/>
+              </div>
+              <div>Produit 5</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product6.jpg" alt="Produit 6" class="product-img-circular"/>
+              </div>
+              <div>Produit 6</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product7.jpg" alt="Produit 7" class="product-img-circular"/>
+              </div>
+              <div>Produit 7</div>
+            </div>
+            <div class="product-item">
+              <div class="product-img-container">
+                <img src="assets/images/product8.jpg" alt="Produit 8" class="product-img-circular"/>
+              </div>
+              <div>Produit 8</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
 </div>
+
