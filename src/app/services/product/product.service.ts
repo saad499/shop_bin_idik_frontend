@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { ProductDto } from '../../dto/ProductDto';
 import { ProductFullDto } from '../../dto/ProductFullDto';
 import { Page } from '../../dto/Pageable/Page';
+import { ProductActiveDto } from '../../dto/ProductActiveDto';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -87,5 +88,12 @@ export class ProductService {
       .set('page', page.toString())
       .set('size', size.toString());
     return this.http.get<Page<ProductDto>>(`${this.apiUrl}/search/categorie`, { params });
+  }
+
+  getAllActiveProducts(page: number = 0, size: number = 8): Observable<Page<ProductActiveDto>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductActiveDto>>(`${this.apiUrl}/status/active`, { params });
   }
 }

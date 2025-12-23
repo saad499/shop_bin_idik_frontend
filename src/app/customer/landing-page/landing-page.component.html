@@ -199,53 +199,14 @@
           </div>
         </div>
         <div class="products-grid">
-          <div class="product-item">
+          <div class="product-item" *ngFor="let product of activeProducts">
             <div class="product-img-container">
-              <img src="assets/images/pullbear.jpg" alt="Produit 1" class="product-img-circular"/>
+              <img 
+                [src]="product.image?.imageUrl || 'assets/images/default-product.jpg'" 
+                [alt]="product.nom" 
+                class="product-img-circular"/>
             </div>
-            <div class="product-name">PULL&BEAR</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product2.jpg" alt="Produit 2" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 2</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product3.jpg" alt="Produit 3" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 3</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product4.jpg" alt="Produit 4" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 4</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product5.jpg" alt="Produit 5" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 5</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product6.jpg" alt="Produit 6" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 6</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product7.jpg" alt="Produit 7" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 7</div>
-          </div>
-          <div class="product-item">
-            <div class="product-img-container">
-              <img src="assets/images/product8.jpg" alt="Produit 8" class="product-img-circular"/>
-            </div>
-            <div class="product-name">Produit 8</div>
+            <div class="product-name">{{ product.nom }}</div>
           </div>
         </div>
       </section>
