@@ -96,4 +96,12 @@ export class ProductService {
       .set('size', size.toString());
     return this.http.get<Page<ProductActiveDto>>(`${this.apiUrl}/status/active`, { params });
   }
+
+  searchProductActif(searchTerm: string, page: number = 0, size: number = 8): Observable<Page<ProductActiveDto>> {
+    const params = new HttpParams()
+      .set('searchTerm', searchTerm)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<ProductActiveDto>>(`${this.apiUrl}/search/actif`, { params });
+  }
 }

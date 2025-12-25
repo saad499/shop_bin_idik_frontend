@@ -119,71 +119,24 @@
         <div class="section-header">
           <h2><i class="bi bi-shop"></i> Nos Magasins Partenaires</h2>
           <div class="search-container">
-            <input type="text" class="magasin-search" placeholder="Rechercher un magasin..."/>
+            <input 
+              type="text" 
+              class="magasin-search" 
+              placeholder="Rechercher un magasin..."
+              [(ngModel)]="storeSearchTerm"
+              (input)="onStoreSearchChange($event)"/>
             <i class="bi bi-search search-icon"></i>
           </div>
         </div>
         <div class="magasins-carousel">
           <div class="magasins-list-scroll">
-            <div class="magasin-item">
+            <div class="magasin-item" *ngFor="let commercant of commercants">
               <div class="magasin-img">
-                <img src="assets/images/pullbear.jpg" alt="Pull&Bear" class="magasin-img-circular"/>
+                <img [src]="commercant.logo || 'assets/images/default-store.jpg'" 
+                     [alt]="commercant.nameMagazin" 
+                     class="magasin-img-circular"/>
               </div>
-              <div class="magasin-name">PULL&BEAR</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/decathlon.jpg" alt="Decathlon" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">DECATHLON</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/fnac.jpg" alt="Fnac" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">Fnac</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/HM.jpg" alt="H&M" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">H&M</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/istyle.jpg" alt="iStyle" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">ISTYLE</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/kiabu.jfif" alt="Kiabi" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">KIABI</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/lefties.jpg" alt="Lefties" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">LEFTIES</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/NESPRESSO.jpg" alt="Nespresso" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">NESPRESSO</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/virgin.jpg" alt="Virgin" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">VIRGIN</div>
-            </div>
-            <div class="magasin-item">
-              <div class="magasin-img">
-                <img src="assets/images/principe.jpg" alt="Principe" class="magasin-img-circular"/>
-              </div>
-              <div class="magasin-name">PRINCIPE</div>
+              <div class="magasin-name">{{ commercant.nameMagazin }}</div>
             </div>
           </div>
         </div>
@@ -194,7 +147,12 @@
         <div class="section-header">
           <h2><i class="bi bi-grid-3x3-gap"></i> Produits Populaires</h2>
           <div class="search-container">
-            <input type="text" class="product-search" placeholder="Rechercher un produit..."/>
+            <input 
+              type="text" 
+              class="product-search" 
+              placeholder="Rechercher un produit..."
+              [(ngModel)]="productSearchTerm"
+              (input)="onProductSearchChange($event)"/>
             <i class="bi bi-search search-icon"></i>
           </div>
         </div>
