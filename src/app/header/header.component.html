@@ -1,0 +1,247 @@
+<header class="header">
+  <nav class="navbar navbar-expand-lg w-100">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="assets/images/logos.jpeg" alt="Logo" class="logo" />
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" (click)="openDrawer()" style="cursor:pointer;">
+              Ajouter <i class="bi bi-plus"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" 
+               routerLink="/merchant/product" 
+               routerLinkActive="active" 
+               (click)="navigateToProducts()"
+               [routerLinkActiveOptions]="{exact: false}">Mes produits</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/merchant/order" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Commandes</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/merchant/delivery" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Livreurs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/customer/landing-page" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+              Accueil
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/customer/magasin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+              Magasin
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/customer/product" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+              Produits
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link panier-nav-link" (click)="togglePanier()" style="cursor:pointer;">
+              <i class="bi bi-cart3"></i>
+              <span class="cart-badge" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
+              <span class="cart-loading" *ngIf="isLoadingCart">
+                <i class="bi bi-arrow-clockwise spin"></i>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Panier Component -->
+<div class="panier-overlay" *ngIf="showPanier" (click)="closePanier()">
+  <div class="panier-container" (click)="$event.stopPropagation()">
+    <div class="panier-header">
+      <h2><i class="bi bi-cart3"></i> <span class="d-none d-sm-inline">Mon</span> Panier</h2>
+      <button class="close-btn" (click)="closePanier()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    
+    <div class="panier-content">
+      <div *ngIf="cartItems.length === 0" class="empty-cart">
+        <i class="bi bi-cart-x empty-cart-icon"></i>
+        <h3>Votre panier est vide</h3>
+        <p class="d-none d-sm-block">Découvrez nos produits et ajoutez-les à votre panier</p>
+        <button class="btn-continue-shopping" (click)="continueShopping()">
+          <span class="d-none d-sm-inline">Continuer mes achats</span>
+          <span class="d-inline d-sm-none">Acheter</span>
+        </button>
+      </div>
+      
+      <div *ngIf="cartItems.length > 0">
+        <!-- Desktop Table -->
+        <div class="desktop-table d-none d-lg-block">
+          <table class="panier-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Prix</th>
+                <th>Quantité</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of cartItems; let i = index">
+                <td>
+                  <div class="product-info">
+                    <img [src]="item.productImage || 'assets/images/default-product.jpg'" [alt]="item.productName" class="product-image">
+                    <div class="product-details">
+                      <h4>{{item.productName}}</h4>
+                      <span class="product-specs" *ngIf="item.sizeName || item.colorName">
+                        <span *ngIf="item.sizeName">Taille: {{item.sizeName}}</span>
+                        <span *ngIf="item.colorName" class="ms-2">Couleur: {{item.colorName}}</span>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="price-cell">{{item.unitPrice | currency:'MAD':'symbol':'1.2-2'}}</td>
+                <td>
+                  <div class="quantity-controls">
+                    <button class="qty-btn" (click)="decreaseQuantity(i)">-</button>
+                    <span class="qty-display">{{item.quantity}}</span>
+                    <button class="qty-btn" (click)="increaseQuantity(i)">+</button>
+                  </div>
+                </td>
+                <td class="total-cell">{{item.totalPrice | currency:'MAD':'symbol':'1.2-2'}}</td>
+                <td>
+                  <button class="remove-btn" 
+                          (click)="removeItem(i)" 
+                          title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile/Tablet Cards -->
+        <div class="mobile-cards d-block d-lg-none">
+          <div *ngFor="let item of cartItems; let i = index" class="cart-item-card">
+            <div class="card-header">
+              <button class="remove-btn-mobile" 
+                      (click)="removeItem(i)" 
+                      title="Supprimer">
+                <i class="bi bi-trash"></i>
+                <i class="bi bi-arrow-clockwise spin"></i>
+              </button>
+            </div>
+            
+            <div class="card-content">
+              <div class="product-section">
+                <img [src]="item.productImage || 'assets/images/default-product.jpg'" [alt]="item.productName" class="product-image-mobile">
+                <div class="product-info-mobile">
+                  <h4>{{item.productName}}</h4>
+                  <div class="product-specs-mobile" *ngIf="item.sizeName || item.colorName">
+                    <span *ngIf="item.sizeName" class="spec-badge">{{item.sizeName}}</span>
+                    <span *ngIf="item.colorName" class="spec-badge">{{item.colorName}}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-section">
+                <div class="price-row">
+                  <span class="label">Prix unitaire:</span>
+                  <span class="value">{{item.unitPrice | currency:'MAD':'symbol':'1.2-2'}}</span>
+                </div>
+                
+                <div class="quantity-row">
+                  <span class="label">Quantité:</span>
+                  <div class="quantity-controls-mobile">
+                    <button class="qty-btn-mobile" (click)="decreaseQuantity(i)">-</button>
+                    <span class="qty-display-mobile">{{item.quantity}}</span>
+                    <button class="qty-btn-mobile" (click)="increaseQuantity(i)">+</button>
+                  </div>
+                </div>
+                
+                <div class="total-row">
+                  <span class="label">Total:</span>
+                  <span class="total-value">{{item.totalPrice | currency:'MAD':'symbol':'1.2-2'}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="panier-summary">
+          <div class="summary-row">
+            <span class="summary-label">Sous-total:</span>
+            <span class="summary-value">{{getSubtotal() | currency:'MAD':'symbol':'1.2-2'}}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Frais de livraison:</span>
+            <span class="summary-value">{{shippingFee | currency:'MAD':'symbol':'1.2-2'}}</span>
+          </div>
+          <div class="summary-row total-row">
+            <span class="summary-label">Total:</span>
+            <span class="summary-value">{{getTotal() | currency:'MAD':'symbol':'1.2-2'}}</span>
+          </div>
+          
+          <div class="panier-actions">
+            <button class="btn btn-outline" (click)="continueShopping()">
+              <span class="d-none d-sm-inline">Continuer mes achats</span>
+              <span class="d-inline d-sm-none">Continuer</span>
+            </button>
+            <button class="btn btn-primary">
+              <span class="d-none d-sm-inline">Procéder au paiement</span>
+              <span class="d-inline d-sm-none">Payer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Drawer -->
+<nz-drawer
+  *ngIf="visible"
+  [nzBodyStyle]="{ overflow: 'auto' }"
+  [nzMaskClosable]="false"
+  [nzWidth]="getDrawerWidth()"
+  [nzVisible]="visible"
+  nzTitle="Ajouter un produit"
+  [nzFooter]="footerTpl"
+  (nzOnClose)="closeDrawer()">
+  
+  <div *nzDrawerContent>
+    <!-- ...existing form content... -->
+  </div>
+
+  <ng-template #footerTpl>
+    <div class="d-flex justify-content-end gap-2">
+      <button nz-button (click)="closeDrawer()">
+        Annuler
+      </button>
+      <button nz-button nzType="primary" 
+              (click)="addProduct()" 
+              [disabled]="isAddingProduct" 
+              [nzLoading]="isAddingProduct">
+        Ajouter
+      </button>
+    </div>
+  </ng-template>
+</nz-drawer>
+
+<!-- Category Drawer -->
+<nz-drawer 
+  *ngIf="categoryDrawerVisible"
+  [nzVisible]="categoryDrawerVisible"
+  [nzTitle]="selectedCategory ? 'Modifier la catégorie' : 'Ajouter une catégorie'"
+  [nzWidth]="400"
+  (nzOnClose)="closeCategoryDrawer()">
+  
+  <!-- ...existing category form... -->
+</nz-drawer>

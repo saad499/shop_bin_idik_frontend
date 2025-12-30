@@ -1,4 +1,4 @@
-<div class="product-page-container">
+<div class="magazin-page-container">
   <div class="main-layout-row">
     <!-- Sidebar (left, full height) -->
     <aside class="sidebar custom-sidebar collapsible-sidebar" [class.collapsed]="sidebarCollapsed">
@@ -90,54 +90,40 @@
       <!-- Header Section -->
       <section class="page-header">
         <div class="header-content">
-          <h1><i class="bi bi-grid-3x3-gap"></i> Catalogue Produits</h1>
-          <p>Explorez notre collection complète de produits</p>
+          <h1><i class="bi bi-shop"></i> Nos Magasins Partenaires</h1>
+          <p>Découvrez tous nos magasins partenaires</p>
         </div>
       </section>
 
-     
-
-      <!-- Products Section -->
-      <section class="products-section">
+      <!-- Magazins Section -->
+      <section class="magazins-section">
         <div class="section-header">
-          <h2><i class="bi bi-grid-3x3-gap"></i> Produits Populaires</h2>
+          <h2><i class="bi bi-shop"></i> Magasins Disponibles</h2>
           <div class="search-container">
             <input 
               type="text" 
-              class="product-search" 
-              placeholder="Rechercher un produit..."
+              class="magazin-search" 
+              placeholder="Rechercher un magasin..."
               [(ngModel)]="searchTerm"
               (input)="onSearchChange($event)"/>
             <i class="bi bi-search search-icon"></i>
           </div>
         </div>
-        <div class="products-grid">
-          <div class="product-item" *ngFor="let product of products; let i = index">
-            <div class="product-img-container">
+        <div class="magazins-grid">
+          <div class="magazin-item" *ngFor="let magazin of magazins">
+            <div class="magazin-img-container">
               <img 
-                [src]="product.image?.imageUrl || 'assets/images/default-product.jpg'" 
-                [alt]="product.nom" 
-                class="product-img-circular"/>
+                [src]="magazin.logo || 'assets/images/default-store.jpg'" 
+                [alt]="magazin.nameMagazin" 
+                class="magazin-img-circular"/>
             </div>
-            <div class="product-name">{{ product.nom }}</div>
-            
-            <!-- Product ID Display -->
-            <div class="product-id" *ngIf="product.idProduct">
-              ID: {{ product.idProduct }}
-            </div>
-            
-            <!-- Debug info - remove in production -->
-            <div class="debug-info" style="font-size: 0.8rem; color: #666; margin: 5px 0;">
-              <div>Image ID: {{ product.image?.id || 'N/A' }}</div>
-              <div>Index: {{ i }}</div>
-            </div>
-            
-            <div class="product-actions">
-              <button class="btn btn-primary" (click)="addToCart(product)" title="Ajouter au panier">
-                <i class="bi bi-cart-plus"></i>
+            <div class="magazin-name">{{ magazin.nameMagazin }}</div>
+            <div class="magazin-actions">
+              <button class="btn btn-primary" (click)="visitStore(magazin)" title="Visiter le magasin">
+                <i class="bi bi-shop"></i>
               </button>
-              <button class="btn btn-outline" (click)="viewDetails(product)" title="Voir les détails">
-                <i class="bi bi-eye"></i>
+              <button class="btn btn-outline" (click)="followStore(magazin)" title="Suivre le magasin">
+                <i class="bi bi-heart"></i>
               </button>
             </div>
           </div>
