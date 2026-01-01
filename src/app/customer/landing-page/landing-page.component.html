@@ -93,7 +93,21 @@
           <div class="hero-text">
             <h1>Découvrez nos meilleures offres</h1>
             <p>Trouvez les produits de vos marques préférées au meilleur prix</p>
+            
+            <!-- Main Hero Search -->
+            <div class="hero-search">
+              <div class="search-container">
+                <input 
+                  type="text" 
+                  class="landing-search" 
+                  placeholder="Que cherchez-vous aujourd'hui ?"
+                  [(ngModel)]="productSearchTerm"
+                  (input)="onProductSearchChange($event)"/>
+                <i class="bi bi-search search-icon"></i>
+              </div>
+            </div>
           </div>
+          
           <div class="landing-carousel">
             <button class="carousel-btn prev-btn" (click)="prevImage()" aria-label="Précédent">
               <i class="bi bi-chevron-left"></i>
@@ -121,7 +135,7 @@
           <div class="search-container">
             <input 
               type="text" 
-              class="magasin-search" 
+              class="search-input" 
               placeholder="Rechercher un magasin..."
               [(ngModel)]="storeSearchTerm"
               (input)="onStoreSearchChange($event)"/>
@@ -149,7 +163,7 @@
           <div class="search-container">
             <input 
               type="text" 
-              class="product-search" 
+              class="search-input" 
               placeholder="Rechercher un produit..."
               [(ngModel)]="productSearchTerm"
               (input)="onProductSearchChange($event)"/>

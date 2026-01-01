@@ -20,6 +20,10 @@ export class ProductComponent implements OnInit {
   currentPage = 0;
   totalPages = 1;
   pageSize = 4;
+  showProductDetail = false;
+  selectedProduct: ProductActiveDto | null = null;
+  selectedColorId: number | null = null;
+  selectedSizeId: number | null = null;
 
   constructor(
     private productService: ProductService,
@@ -113,10 +117,26 @@ export class ProductComponent implements OnInit {
     return pages;
   }
 
+  viewDetails(product: ProductActiveDto): void {
+    console.log('Viewing details for:', product);
+    this.selectedProduct = product;
+    this.showProductDetail = true;
+    // Reset selections
+    this.selectedColorId = null;
+    this.selectedSizeId = null;
+  }
+
+  selectColor(colorId: number): void {
+    this.selectedColorId = colorId;
+  }
+
+  selectSize(sizeId: number): void {
+    this.selectedSizeId = sizeId;
+  }
+
   addToCart(product: ProductActiveDto, imageId?: number): void {
     console.log('Add to cart clicked for:', product.nom);
     console.log('Product ID:', product.idProduct);
-    console.log('Image ID:', imageId);
     
     // Validate product and required fields
     if (!product) {
@@ -125,7 +145,6 @@ export class ProductComponent implements OnInit {
       return;
     }
 
-    // Use the correct product ID from the updated ProductActiveDto
     const productId = product.idProduct;
     
     if (!productId) {
@@ -134,9 +153,21 @@ export class ProductComponent implements OnInit {
       return;
     }
 
-    // For colors and sizes, use default values since they're not available in ProductActiveDto
-    const colorId = 1; // Default color ID
-    const sizeId = 1;  // Default size ID
+    // Use selected colors and sizes with proper fallbacks
+    let colorId = 1; // Default
+    let sizeId = 1;  // Default
+
+    if (this.selectedColorId) {
+      colorId = this.selectedColorId;
+    } else if (product.colors && product.colors.length > 0 && product.colors[0].id !== undefined) {
+      colorId = product.colors[0].id;
+    }
+
+    if (this.selectedSizeId) {
+      sizeId = this.selectedSizeId;
+    } else if (product.sizes && product.sizes.length > 0 && product.sizes[0].id !== undefined) {
+      sizeId = product.sizes[0].id;
+    }
 
     const request: AddToCartRequest = {
       productId: productId,
@@ -147,17 +178,15 @@ export class ProductComponent implements OnInit {
 
     console.log('Add to cart request:', request);
 
-    const userId = 1; // This should come from authentication service
+    const userId = 1;
 
     this.cartService.addToCart(userId, request).subscribe({
       next: (cartItem) => {
         console.log('Product added to cart successfully:', cartItem);
         alert(`${product.nom} ajouté au panier avec succès!`);
         
-        // Notify that cart has been updated
         this.cartService.notifyCartUpdated();
         
-        // Verify the correct product was added
         if (cartItem.productName !== product.nom) {
           console.warn(`Product name mismatch - Expected: ${product.nom}, Got: ${cartItem.productName}`);
         }
@@ -174,8 +203,8 @@ export class ProductComponent implements OnInit {
     });
   }
 
-  viewDetails(product: ProductActiveDto): void {
-    console.log('Viewing details for:', product);
-    // TODO: Navigate to product details page
+  closeProductDetail(): void {
+    this.showProductDetail = false;
+    this.selectedProduct = null;
   }
 }

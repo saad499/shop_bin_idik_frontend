@@ -29,6 +29,11 @@ export class CartService {
     return this.http.get<CartSummaryDto>(this.baseUrl, { params });
   }
 
+  removeCartItem(cartItemId: number): Observable<void> {
+    const params = new HttpParams().set('cartItemId', cartItemId.toString());
+    return this.http.delete<void>(`${this.baseUrl}/remove`, { params });
+  }
+
   // Method to notify that cart has been updated
   notifyCartUpdated(): void {
     this.cartUpdated.next();

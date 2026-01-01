@@ -1,0 +1,215 @@
+/* Universal Search Input Styles */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 300px;
+  flex-shrink: 0;
+}
+
+.search-input,
+.product-search,
+.order-search,
+.delivery-search,
+.landing-search {
+  width: 100%;
+  min-width: 250px;
+  padding: 12px 45px 12px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 25px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  font-family: inherit;
+}
+
+.search-input:focus,
+.product-search:focus,
+.order-search:focus,
+.delivery-search:focus,
+.landing-search:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.search-input::placeholder,
+.product-search::placeholder,
+.order-search::placeholder,
+.delivery-search::placeholder,
+.landing-search::placeholder {
+  color: #9ca3af;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+.search-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.search-container:focus-within .search-icon {
+  color: #667eea;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 1200px) {
+  .search-container {
+    min-width: 350px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 300px;
+    font-size: 1.1rem;
+    padding: 14px 50px 14px 22px;
+  }
+  
+  .search-icon {
+    right: 22px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .search-container {
+    min-width: 300px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 280px;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .search-container {
+    min-width: 280px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 250px;
+    font-size: 0.95rem;
+    padding: 11px 42px 11px 18px;
+  }
+  
+  .search-icon {
+    right: 18px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+  .search-container {
+    width: 100%;
+    min-width: 260px;
+    max-width: 350px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 220px;
+    font-size: 0.9rem;
+    padding: 10px 40px 10px 15px;
+  }
+  
+  .search-icon {
+    right: 15px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 575px) {
+  .search-container {
+    width: 100%;
+    min-width: 240px;
+    max-width: 320px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 200px;
+    font-size: 0.85rem;
+    padding: 9px 35px 9px 12px;
+  }
+  
+  .search-icon {
+    right: 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 360px) and (max-width: 479px) {
+  .search-container {
+    width: 100%;
+    min-width: 200px;
+    max-width: 280px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 180px;
+    font-size: 0.8rem;
+    padding: 8px 30px 8px 10px;
+  }
+  
+  .search-icon {
+    right: 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .search-container {
+    width: 100%;
+    min-width: 180px;
+    max-width: 250px;
+  }
+  
+  .search-input,
+  .product-search,
+  .order-search,
+  .delivery-search,
+  .landing-search {
+    min-width: 160px;
+    font-size: 0.75rem;
+    padding: 7px 28px 7px 8px;
+  }
+  
+  .search-icon {
+    right: 8px;
+    font-size: 0.75rem;
+  }
+}

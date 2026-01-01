@@ -1,5 +1,7 @@
 /* Merchant Delivery styles */
 
+@import '../../shared/styles/search-input.css';
+
 .driver-photo-container {
   display: flex;
   flex-direction: column;

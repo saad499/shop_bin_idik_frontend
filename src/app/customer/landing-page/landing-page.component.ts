@@ -159,6 +159,37 @@ export class LandingPageComponent implements OnInit {
     }, 300);
   }
 
+  // Sidebar toggle method
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+
+  // Carousel navigation methods
+  nextImage(): void {
+    this.carouselIndex = (this.carouselIndex + 1) % this.carouselImages.length;
+  }
+
+  prevImage(): void {
+    this.carouselIndex = this.carouselIndex === 0 
+      ? this.carouselImages.length - 1 
+      : this.carouselIndex - 1;
+  }
+
+  goToImage(index: number): void {
+    this.carouselIndex = index;
+  }
+
+  // Store search methods
+  onStoreSearchChange(event: any): void {
+    this.storeSearchTerm = event.target.value;
+    // Debounce search
+    setTimeout(() => {
+      if (this.storeSearchTerm === event.target.value) {
+        this.searchStores();
+      }
+    }, 300);
+  }
+
   searchStores(): void {
     if (this.storeSearchTerm.trim() === '') {
       this.loadCommercants();
@@ -178,33 +209,5 @@ export class LandingPageComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  onStoreSearchChange(event: any): void {
-    this.storeSearchTerm = event.target.value;
-    // Debounce search
-    setTimeout(() => {
-      if (this.storeSearchTerm === event.target.value) {
-        this.searchStores();
-      }
-    }, 300);
-  }
-
-  toggleSidebar(): void {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
-  }
-
-  nextImage(): void {
-    this.carouselIndex = (this.carouselIndex + 1) % this.carouselImages.length;
-  }
-
-  prevImage(): void {
-    this.carouselIndex = this.carouselIndex === 0 
-      ? this.carouselImages.length - 1 
-      : this.carouselIndex - 1;
-  }
-
-  goToImage(index: number): void {
-    this.carouselIndex = index;
   }
 }

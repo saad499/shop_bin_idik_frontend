@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -34,27 +34,34 @@ export class HeaderComponent implements OnInit, OnDestroy {
   cartItems: CartItemDto[] = [];
   cartItemCount = 0;
   shippingFee = 30;
-  private userId = 1; // This should come from authentication service
+  private userId = 1;
+  isLoadingCart = false;
+  removingItemIds: Set<number> = new Set(); // Track which items are being removed
 
   // Drawer properties
   visible = false;
   categoryDrawerVisible = false;
   isAddingProduct = false;
   selectedCategory: any = null;
-  isLoadingCart = false;
 
   constructor(
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.loadCart();
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.loadCart();
+    });
     
     // Subscribe to cart updates
     this.cartService.cartUpdated$.subscribe(() => {
       console.log('Cart update notification received, reloading cart...');
-      this.loadCart();
+      setTimeout(() => {
+        this.loadCart();
+      });
     });
   }
 
@@ -71,6 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.cartItemCount = cartSummary.totalItems || 0;
         console.log('Cart loaded successfully:', cartSummary);
         this.isLoadingCart = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading cart:', error);
@@ -78,6 +86,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.cartItems = [];
         this.cartItemCount = 0;
         this.isLoadingCart = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -86,8 +95,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   togglePanier() {
     this.showPanier = !this.showPanier;
     if (this.showPanier) {
-      // Refresh cart data when opening
-      this.loadCart();
+      // Use setTimeout to prevent change detection issues
+      setTimeout(() => {
+        this.loadCart();
+      });
     }
   }
 
@@ -109,6 +120,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       item.quantity++;
       item.totalPrice = item.quantity * item.unitPrice;
       this.updateCartCount();
+      this.cdr.detectChanges();
     }
   }
 
@@ -121,18 +133,59 @@ export class HeaderComponent implements OnInit, OnDestroy {
       item.quantity--;
       item.totalPrice = item.quantity * item.unitPrice;
       this.updateCartCount();
+      this.cdr.detectChanges();
     }
   }
 
   removeItem(index: number) {
     if (this.cartItems[index]) {
       const item = this.cartItems[index];
-      // TODO: Call API to remove item
-      console.log('Remove item:', item.productName);
-      // For now, just remove locally
-      this.cartItems.splice(index, 1);
-      this.updateCartCount();
+      const cartItemId = item.id;
+
+      if (!cartItemId) {
+        console.error('Cart item ID is missing:', item);
+        alert('Erreur: ID de l\'article manquant');
+        return;
+      }
+
+      // Check if this item is already being removed
+      if (this.removingItemIds.has(cartItemId)) {
+        return;
+      }
+
+      // Add to removing items set
+      this.removingItemIds.add(cartItemId);
+      this.cdr.detectChanges();
+
+      // Call API to remove item
+      this.cartService.removeCartItem(cartItemId).subscribe({
+        next: () => {
+          console.log('Item removed from cart successfully');
+          
+          // Remove from removing items set first
+          this.removingItemIds.delete(cartItemId);
+          
+          // Reload the entire cart to ensure consistency with backend
+          this.loadCart();
+          
+          // Notify other components that cart has been updated
+          this.cartService.notifyCartUpdated();
+        },
+        error: (error) => {
+          console.error('Error removing item from cart:', error);
+          alert('Erreur lors de la suppression de l\'article du panier');
+          
+          // Remove from removing items set on error
+          this.removingItemIds.delete(cartItemId);
+          this.cdr.detectChanges();
+        }
+      });
     }
+  }
+
+  // Helper method to check if specific item is being removed
+  isItemBeingRemoved(itemId: number): boolean {
+    return this.removingItemIds.has(itemId);
   }
 
   getSubtotal(): number {
