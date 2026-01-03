@@ -152,6 +152,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/customer/product']);
   }
 
+  proceedToCheckout() {
+    this.showPanier = false;
+    this.router.navigate(['/customer/follow-order']);
+  }
+
   increaseQuantity(index: number) {
     if (this.cartItems[index]) {
       const item = this.cartItems[index];

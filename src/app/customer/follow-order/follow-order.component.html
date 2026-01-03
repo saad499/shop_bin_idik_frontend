@@ -1,0 +1,113 @@
+<div class="follow-order-container">
+  <div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12 text-center text-md-start">
+        <h1 class="page-title">Suivi de commande</h1>
+        <p class="text-muted">Commande #{{orderDetails.orderNumber}}</p>
+      </div>
+    </div>
+
+    <!-- Order Progress -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="order-progress-container">
+          <div class="progress-steps">
+            <div *ngFor="let step of orderSteps; let i = index" 
+                 class="step-item"
+                 [class.completed]="step.status === 'completed'"
+                 [class.current]="step.status === 'current'"
+                 [class.pending]="step.status === 'pending'">
+              
+              <div class="step-circle">
+                <i class="bi bi-check" *ngIf="step.status === 'completed'"></i>
+                <span *ngIf="step.status === 'current'">{{i + 1}}</span>
+                <span *ngIf="step.status === 'pending'">{{i + 1}}</span>
+              </div>
+              
+              <div class="step-content">
+                <h5 class="step-title">{{step.title}}</h5>
+                <p class="step-description">{{step.description}}</p>
+                <small class="step-date" *ngIf="step.date">{{step.date}}</small>
+              </div>
+              
+              <div class="step-line" *ngIf="i < orderSteps.length - 1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Details -->
+    <div class="row">
+      <div class="col-lg-8 col-md-7 mb-4">
+        <div class="card order-details-card">
+          <div class="card-header">
+            <h5 class="mb-0">Détails de la commande</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-6 mb-3">
+                <strong>Numéro de commande:</strong><br>
+                <span class="text-muted">{{orderDetails.orderNumber}}</span>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <strong>Date de commande:</strong><br>
+                <span class="text-muted">{{orderDetails.orderDate}}</span>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <strong>Livraison estimée:</strong><br>
+                <span class="text-success">{{orderDetails.estimatedDelivery}}</span>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <strong>Montant total:</strong><br>
+                <span class="fw-bold text-primary fs-5">{{orderDetails.totalAmount | currency:'MAD':'symbol':'1.2-2'}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-5">
+        <div class="card shipping-card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-geo-alt me-2"></i>
+              <span class="d-none d-sm-inline">Adresse de livraison</span>
+              <span class="d-inline d-sm-none">Livraison</span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <p class="mb-2"><strong>{{orderDetails.shippingAddress.name}}</strong></p>
+            <p class="mb-2 text-muted">{{orderDetails.shippingAddress.street}}</p>
+            <p class="mb-2 text-muted">{{orderDetails.shippingAddress.city}}</p>
+            <p class="mb-0">
+              <i class="bi bi-telephone me-1"></i> 
+              <a href="tel:{{orderDetails.shippingAddress.phone}}" class="text-decoration-none">
+                {{orderDetails.shippingAddress.phone}}
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 gap-sm-3">
+          <button class="btn btn-outline-primary" (click)="goBackToShopping()">
+            <i class="bi bi-arrow-left me-2"></i>
+            <span class="d-none d-sm-inline">Continuer mes achats</span>
+            <span class="d-inline d-sm-none">Continuer</span>
+          </button>
+          <button class="btn btn-secondary" (click)="contactSupport()">
+            <i class="bi bi-headset me-2"></i>
+            <span class="d-none d-sm-inline">Contacter le support</span>
+            <span class="d-inline d-sm-none">Support</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
