@@ -88,8 +88,7 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
         next: (response) => {
           console.log('Received orders:', response.content.length, 'for page:', response.number); // Debug log
           this.orders = response.content.map(order => ({
-            ...order,
-            orderDate: new Date(order.orderDate)
+            ...order
           }));
           this.totalItems = response.totalElements;
           this.totalPages = response.totalPages;
@@ -154,7 +153,35 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (updatedOrder) => {
-            alert(`Statut mis à jour avec succès vers "${this.getStatusLabel(updatedOrder.orderStatus)}"!`);
+            alert(`Statut mis à jour avec succès vers "${this.getStatusLabel(updatedOrder.orderStatus as StatusOrder)}"!`);
+            this.loadOrders();
+          },
+          error: (error) => {
+            console.error('Error updating order status:', error);
+            alert('Erreur lors de la mise à jour du statut');
+          }
+        });
+    }
+  }
+
+  progressOrderStatus(numberOrder: number): void {
+    // Find the order to get its current status
+    const order = this.orders.find(o => o.numberOrder === numberOrder);
+    if (!order) {
+      console.error('Order not found:', numberOrder);
+      return;
+    }
+
+    // Convert string status to enum
+    const currentStatus = order.orderStatus as StatusOrder;
+    const nextStatusLabel = this.getNextStatusLabel(currentStatus);
+    
+    if (confirm(`Voulez-vous faire progresser cette commande vers "${nextStatusLabel}"?`)) {
+      this.orderService.progressOrderStatus(numberOrder)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (updatedOrder) => {
+            alert(`Statut mis à jour avec succès vers "${this.getStatusLabel(updatedOrder.orderStatus as StatusOrder)}"!`);
             this.loadOrders();
           },
           error: (error) => {
@@ -262,5 +289,13 @@ export class MerchantOrderComponent implements OnInit, OnDestroy {
     } else {
       return 800;
     }
+  }
+
+  getOrderStatusClass(orderStatus: string): string {
+    return this.getStatusClass(orderStatus as StatusOrder);
+  }
+
+  getOrderStatusLabel(orderStatus: string): string {
+    return this.getStatusLabel(orderStatus as StatusOrder);
   }
 }

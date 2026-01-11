@@ -1,5 +1,6 @@
 export interface CartItemDto {
   id: number;
+  productId: number; // Add this field
   productName: string;
   productImage: string;
   colorName: string;

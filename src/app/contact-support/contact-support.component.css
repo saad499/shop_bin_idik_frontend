@@ -1,0 +1,108 @@
+.support-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  border: 1px solid #e0e0e0;
+}
+
+.card-title {
+  color: #333;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.form-label {
+  color: #555;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.form-select,
+.form-control {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-select:focus,
+.form-control:focus {
+  border-color: #7c4dff;
+  box-shadow: 0 0 0 0.2rem rgba(124, 77, 255, 0.25);
+  outline: none;
+}
+
+.message-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #7c4dff, #9c66ff);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6a3de8, #8a5aff);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(124, 77, 255, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.success-icon {
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.btn-link {
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 576px) {
+  .support-card {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .card-title {
+    font-size: 1.25rem;
+  }
+}

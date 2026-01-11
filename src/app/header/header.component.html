@@ -44,6 +44,16 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" routerLink="/feedback" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+              <i class="bi bi-chat-heart me-1"></i>Feedback
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/help-support" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+              Aide & Support
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link panier-nav-link" (click)="togglePanier()" style="cursor:pointer;">
               <i class="bi bi-cart3"></i>
               <span class="cart-badge" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
@@ -52,6 +62,7 @@
               </span>
             </a>
           </li>
+          
         </ul>
       </div>
     </div>
@@ -197,9 +208,18 @@
               <span class="d-none d-sm-inline">Continuer mes achats</span>
               <span class="d-inline d-sm-none">Continuer</span>
             </button>
-            <button class="btn btn-primary" (click)="proceedToCheckout()">
-              <span class="d-none d-sm-inline">Procéder au paiement</span>
-              <span class="d-inline d-sm-none">Payer</span>
+            <button class="btn btn-primary" 
+                    (click)="proceedToCheckout()"
+                    [disabled]="isProcessingOrder || cartItems.length === 0">
+              <span *ngIf="!isProcessingOrder">
+                <span class="d-none d-sm-inline">Procéder au paiement</span>
+                <span class="d-inline d-sm-none">Payer</span>
+              </span>
+              <span *ngIf="isProcessingOrder">
+                <i class="bi bi-arrow-clockwise spin me-2"></i>
+                <span class="d-none d-sm-inline">Traitement...</span>
+                <span class="d-inline d-sm-none">...</span>
+              </span>
             </button>
           </div>
         </div>

@@ -1,0 +1,163 @@
+<div class="inscription-container">
+  <div class="inscription-form">
+    <div class="logo-section">
+      <div class="logo">
+        <span class="cart-icon">🛒</span>
+        <span class="logo-text">ShopBinidik</span>
+      </div>
+    </div>
+
+    <form (ngSubmit)="onInscription()" #deliveryForm="ngForm">
+      <!-- Section 1: Information de base -->
+      <div class="section">
+        <h3 class="section-title">1. Information de base</h3>
+        
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="nomComplet">Nom complet :</label>
+            <input type="text" id="nomComplet" name="nomComplet" [(ngModel)]="nomComplet" required class="form-control" autocomplete="name">
+          </div>
+          <div class="form-group half">
+            <label for="adresseEmail">adresse e-mail</label>
+            <input type="email" id="adresseEmail" name="adresseEmail" [(ngModel)]="adresseEmail" required class="form-control" autocomplete="new-email">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="numeroTelephone">Numéro de téléphone</label>
+            <input type="tel" id="numeroTelephone" name="numeroTelephone" [(ngModel)]="numeroTelephone" required class="form-control" autocomplete="tel">
+          </div>
+          <div class="form-group half">
+            <label for="nomCommerce">Nom du commerce</label>
+            <input type="text" id="nomCommerce" name="nomCommerce" [(ngModel)]="nomCommerce" class="form-control" autocomplete="organization">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half password-group">
+            <label for="motDePasse">Mot de passe</label>
+            <input [type]="showPassword ? 'text' : 'password'" id="motDePasse" name="motDePasse" [(ngModel)]="motDePasse" required class="form-control" autocomplete="new-password">
+            <span class="eye-icon" (click)="togglePassword()">
+              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+            </span>
+          </div>
+          <div class="form-group half password-group">
+            <label for="confirmerMotDePasse">Confirmer mot de passe</label>
+            <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmerMotDePasse" name="confirmerMotDePasse" [(ngModel)]="confirmerMotDePasse" required class="form-control" autocomplete="new-password">
+            <span class="eye-icon" (click)="toggleConfirmPassword()">
+              {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="photoConducteur">Photo conducteur</label>
+          <input type="file" id="photoConducteur" name="photoConducteur" (change)="onPhotoConducteurChange($event)" accept="image/*" class="form-control file-input">
+        </div>
+      </div>
+
+      <!-- Section 2: Type de véhicule -->
+      <div class="section">
+        <h3 class="section-title">2. Type de véhicule</h3>
+        
+        <div class="form-group">
+          <label for="typeVehicule">Type de véhicule (Moto, Voiture, Camion)</label>
+          <select id="typeVehicule" name="typeVehicule" [(ngModel)]="typeVehicule" required class="form-control">
+            <option value="">Sélectionner un type</option>
+            <option value="moto">Moto</option>
+            <option value="voiture">Voiture</option>
+            <option value="camion">Camion</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section 3: Info véhicule -->
+      <div class="section">
+        <h3 class="section-title">3. Info véhicule</h3>
+        
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="marque">a) moto :</label>
+            <input type="text" id="marque" name="marque" [(ngModel)]="marque" class="form-control" autocomplete="off">
+          </div>
+          <div class="form-group half">
+            <label for="numeroimmatriculation">Numéro d'immatriculation :</label>
+            <input type="text" id="numeroimmatriculation" name="numeroimmatriculation" [(ngModel)]="numeroimmatriculation" class="form-control" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="photoVehicule">Photo du véhicule :</label>
+            <input type="file" id="photoVehicule" name="photoVehicule" (change)="onPhotoVehiculeChange($event)" accept="image/*" class="form-control file-input">
+          </div>
+          <div class="form-group half">
+            <label for="photoCarteGrise">Photo carte grise :</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="photoCarteGrise" value="recto" [(ngModel)]="photoCarteGrise"> Recto
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="photoCarteGrise" value="verso" [(ngModel)]="photoCarteGrise"> Verso
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="voitureOuCamion">b) Voiture ou Camion</label>
+            <input type="text" id="voitureOuCamion" name="voitureOuCamion" [(ngModel)]="voitureOuCamion" class="form-control" autocomplete="off">
+          </div>
+          <div class="form-group half">
+            <label for="numeroImmatriculationVoiture">Numéro d'immatriculation :</label>
+            <input type="text" id="numeroImmatriculationVoiture" name="numeroImmatriculationVoiture" [(ngModel)]="numeroImmatriculationVoiture" class="form-control" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="photoVehicule2">Photo du véhicule :</label>
+            <input type="file" id="photoVehicule2" name="photoVehicule2" (change)="onPhotoVehicule2Change($event)" accept="image/*" class="form-control file-input">
+          </div>
+          <div class="form-group half">
+            <label for="photoCarteGrise2">Photo carte grise :</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="photoCarteGrise2" value="recto" [(ngModel)]="photoCarteGrise2"> Recto
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="photoCarteGrise2" value="verso" [(ngModel)]="photoCarteGrise2"> Verso
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="photoPermis">Photo du permis</label>
+            <input type="file" id="photoPermis" name="photoPermis" (change)="onPhotoPermisChange($event)" accept="image/*" class="form-control file-input">
+          </div>
+          <div class="form-group half">
+            <label for="numeroPermisConduire">Numéro de permis de conduire :</label>
+            <input type="text" id="numeroPermisConduire" name="numeroPermisConduire" [(ngModel)]="numeroPermisConduire" class="form-control" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="inscription-btn" [disabled]="!isFormValid()">
+        Inscription complète
+      </button>
+    </form>
+
+    <div class="footer-links">
+      <a href="#" class="footer-link" (click)="goToLogin(); $event.preventDefault()">
+        Avez-vous déjà un compte?
+      </a>
+      <a href="#" class="footer-link" (click)="goBack(); $event.preventDefault()">
+        Revenir à la page d'accueil
+      </a>
+    </div>
+  </div>
+</div>

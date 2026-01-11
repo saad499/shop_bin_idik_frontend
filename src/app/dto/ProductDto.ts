@@ -13,6 +13,6 @@ export interface ProductDto {
   images: ImageDto[];
   stock: number;
   status: StatusProduct;
-  isActiveProduct?: boolean;
+  isActiveProduct: boolean;
   categorieId: number;
 }

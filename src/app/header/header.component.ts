@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
@@ -8,8 +8,10 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { CartService } from '../services/cart/cart.service';
+import { OrderService } from '../services/order/order.service';
 import { CartSummaryDto } from '../dto/CartSummaryDto';
 import { CartItemDto } from '../dto/CartItemDto';
+import { CreateOrderRequest, OrderItemRequest } from '../dto/CreateOrderRequest';
 import { Subject, takeUntil } from 'rxjs';
 import { ProductDto } from '../dto/ProductDto';
 import { CategoryFullDto } from '../dto/CategoryFullDto';
@@ -27,6 +29,7 @@ import { SizeDto } from '../dto/SizeDto';
   imports: [
     CommonModule, 
     FormsModule, 
+    ReactiveFormsModule,
     RouterModule,
     NzIconModule, 
     NzDrawerModule, 
@@ -76,11 +79,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   selectedCategory: CategoryFullDto | null = null;
   newCategory: CategoryDto = this.getEmptyCategory();
 
+  // Order processing
+  isProcessingOrder = false;
 
   constructor(
     private router: Router,
     private cartService: CartService,
+    private orderService: OrderService,
     private cdr: ChangeDetectorRef,
+    private fb: FormBuilder,
     private categoryService: CategoryService, 
     private productService: ProductService,
     private productRefreshService: ProductRefreshService,
@@ -90,15 +97,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
       this.loadCart();
-      this.loadCategories();
     });
+    
+    // Load categories immediately without setTimeout to avoid change detection issues
+    this.loadCategories();
     
     // Subscribe to cart updates
     this.cartService.cartUpdated$.subscribe(() => {
       console.log('Cart update notification received, reloading cart...');
       setTimeout(() => {
         this.loadCart();
-        this.loadCategories();
       });
     });
   }
@@ -153,8 +161,57 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   proceedToCheckout() {
-    this.showPanier = false;
-    this.router.navigate(['/customer/follow-order']);
+    if (this.cartItems.length === 0) {
+      alert('Votre panier est vide');
+      return;
+    }
+
+    this.isProcessingOrder = true;
+    
+    // Create order request from cart items
+    const orderRequest: CreateOrderRequest = {
+      clientId: this.userId,
+      shippingAddress: "123 Rue Mohammed V, Casablanca",
+      billingAddress: "123 Rue Mohammed V, Casablanca",
+      items: this.cartItems.map((cartItem, index) => ({
+        productId: index + 1, // Use incremental IDs starting from 1
+        sizeId: 1, // Use default size ID 1
+        colorId: 1, // Use default color ID 1  
+        quantity: cartItem.quantity,
+        unitPrice: cartItem.unitPrice
+      } as OrderItemRequest))
+    };
+
+    console.log('Order request being sent:', orderRequest); // Debug log
+
+    this.orderService.createOrder(orderRequest).subscribe({
+      next: (orderDetail) => {
+        console.log('Order created successfully:', orderDetail);
+        
+        // Clear cart after successful order
+        this.cartItems = [];
+        this.cartItemCount = 0;
+        this.showPanier = false;
+        
+        // Notify cart service to update
+        this.cartService.notifyCartUpdated();
+        
+        // Navigate to order tracking with order details
+        this.router.navigate(['/customer/follow-order'], {
+          state: { orderDetail: orderDetail }
+        });
+        
+        this.isProcessingOrder = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error creating order:', error);
+        console.error('Order request that failed:', orderRequest); // Debug log
+        alert('Erreur lors de la création de la commande. Veuillez réessayer.');
+        this.isProcessingOrder = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   increaseQuantity(index: number) {
@@ -251,6 +308,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   addColor(): void {
+    if (this.colorName && this.colorName.trim() !== '' && this.colorCode) {
+      // Check for duplicate color names
+      const isDuplicate = this.newProduct.colors.some(
+        existingColor => existingColor.colorName.toLowerCase() === this.colorName.toLowerCase()
+      );
+      
+      if (isDuplicate) {
+        alert(`La couleur "${this.colorName}" existe déjà!`);
+        return;
+      }
+
+      // Add new color
+      this.newProduct.colors.push({
+        colorName: this.colorName.trim(),
+        colorCode: this.colorCode
+      });
+      
+      // Reset inputs
+      this.colorName = '';
+      this.colorCode = '#000000';
+    } else {
+      alert('Veuillez saisir un nom de couleur et sélectionner une couleur');
+    }
   }
 
   removeColor(index: number): void {
@@ -519,39 +599,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     };
   }
 
-  parseSizes(input: string): SizeDto[] {
-  return input
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s.length > 0)
-    .map(sizeName => ({ sizeName }));
-}
-
-    addSize(): void {
-      if (this.sizesInput && this.sizesInput.trim() !== '') {
-      const newSizes = this.parseSizes(this.sizesInput);
-      
-      // Check for duplicates
-      newSizes.forEach(newSize => {
-        const isDuplicate = this.newProduct.sizes.some(
-          existingSize => existingSize.sizeName.toLowerCase() === newSize.sizeName.toLowerCase()
-        );
-        
-        if (isDuplicate) {
-          alert(`La taille "${newSize.sizeName}" existe déjà!`);
-        } else {
-          this.newProduct.sizes.push(newSize);
-        }
-      });
-      
-      this.sizesInput = '';
-    }
-    }
-
-    removeSize(index: number): void {
-      this.newProduct.sizes.splice(index, 1);
-    }
-
   private getEmptyCategory(): CategoryDto {
     return { 
       nom: '', 
@@ -576,5 +623,38 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     this.selectedValue = numericId;
     console.log("→ ID sélectionné:", this.selectedValue);
+  }
+
+  parseSizes(input: string): SizeDto[] {
+    return input
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(sizeName => ({ sizeName }));
+  }
+
+  addSize(): void {
+    if (this.sizesInput && this.sizesInput.trim() !== '') {
+      const newSizes = this.parseSizes(this.sizesInput);
+      
+      // Check for duplicates
+      newSizes.forEach(newSize => {
+        const isDuplicate = this.newProduct.sizes.some(
+          existingSize => existingSize.sizeName.toLowerCase() === newSize.sizeName.toLowerCase()
+        );
+        
+        if (!isDuplicate) {
+          this.newProduct.sizes.push(newSize);
+        } else {
+          alert(`La taille "${newSize.sizeName}" existe déjà!`);
+        }
+      });
+      
+      this.sizesInput = '';
+    }
+  }
+
+  removeSize(index: number): void {
+    this.newProduct.sizes.splice(index, 1);
   }
 }

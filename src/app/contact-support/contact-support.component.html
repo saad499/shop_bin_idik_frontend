@@ -1,0 +1,77 @@
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="support-card">
+    <!-- Success Message -->
+    <div *ngIf="isSubmitted" class="text-center">
+      <div class="success-icon mb-3">
+        <i class="bi bi-check-circle-fill text-success display-4"></i>
+      </div>
+      <h3 class="text-success mb-3">Message envoyé avec succès !</h3>
+      <p class="text-muted mb-4">
+        Nous avons bien reçu votre message. Notre équipe vous contactera bientôt.
+      </p>
+      <div class="d-flex gap-3 justify-content-center">
+        <button type="button" class="btn btn-outline-primary" (click)="resetForm()">
+          Nouveau message
+        </button>
+        <button type="button" class="btn btn-primary" (click)="goBack()">
+          Retour à l'accueil
+        </button>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div *ngIf="!isSubmitted">
+      <h2 class="card-title text-center mb-4">Aide & Support</h2>
+      
+      <form (ngSubmit)="submitContact()" #contactForm="ngForm">
+        <!-- Complaint Type -->
+        <div class="mb-3">
+          <label for="complaintType" class="form-label">Type de réclamation :</label>
+          <select 
+            id="complaintType"
+            class="form-select"
+            [(ngModel)]="contact.complaintType"
+            name="complaintType"
+            required>
+            <option value="">Sélectionnez un type</option>
+            <option *ngFor="let type of complaintTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Message -->
+        <div class="mb-4">
+          <label for="message" class="form-label">Message :</label>
+          <textarea 
+            id="message"
+            class="form-control message-textarea"
+            [(ngModel)]="contact.message"
+            name="message"
+            placeholder="Décrivez votre problème..."
+            rows="5"
+            required></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center">
+          <button 
+            type="submit" 
+            class="btn btn-primary submit-btn"
+            [disabled]="isSubmitting || !isFormValid()">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isSubmitting ? 'Envoi en cours...' : 'Envoyer' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Back Button -->
+      <div class="text-center mt-3">
+        <button type="button" class="btn btn-link text-muted" (click)="goBack()">
+          <i class="bi bi-arrow-left me-1"></i>
+          Retour
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

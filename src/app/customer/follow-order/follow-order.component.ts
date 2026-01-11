@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { OrderDetailDto } from '../../dto/OrderDetailDto';
 
 @Component({
   selector: 'app-follow-order',
@@ -42,7 +43,7 @@ export class FollowOrderComponent implements OnInit {
     }
   ];
 
-  orderDetails = {
+  orderDetails: any = {
     orderNumber: 'CMD-2024-001234',
     orderDate: '2024-01-01',
     estimatedDelivery: '2024-01-03',
@@ -55,10 +56,36 @@ export class FollowOrderComponent implements OnInit {
     }
   };
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) { 
+    // Check if order details were passed from navigation
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras?.state?.['orderDetail']) {
+      const orderDetail: OrderDetailDto = navigation.extras.state['orderDetail'];
+      this.updateOrderDetails(orderDetail);
+    }
+  }
 
   ngOnInit(): void {
     // Load order details from service or route params
+  }
+
+  private updateOrderDetails(orderDetail: OrderDetailDto): void {
+    this.orderDetails = {
+      orderNumber: `CMD-${orderDetail.numberOrder}`,
+      orderDate: new Date(orderDetail.orderDate).toLocaleDateString('fr-FR'),
+      estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'), // 2 days from now
+      totalAmount: orderDetail.total,
+      shippingAddress: {
+        name: `${orderDetail.clientPrenom} ${orderDetail.clientNom}`,
+        street: orderDetail.clientAdresse,
+        city: 'Casablanca', // Extract from address if needed
+        phone: orderDetail.clientTelephone
+      }
+    };
+
+    // Update order status to show current step
+    this.orderSteps[0].status = 'completed';
+    this.orderSteps[0].date = new Date().toLocaleString('fr-FR');
   }
 
   goBackToShopping(): void {

@@ -1,0 +1,146 @@
+<div class="inscription-container">
+  <div class="inscription-form">
+    <div class="logo-section">
+      <div class="logo">
+        <span class="cart-icon">🛒</span>
+        <span class="logo-text">ShopBinidik</span>
+      </div>
+    </div>
+
+    <form (ngSubmit)="onInscription()" #commercantForm="ngForm">
+      <!-- Section 1: Information de base -->
+      <div class="section">
+        <h3 class="section-title">1. Information de base</h3>
+        
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" [(ngModel)]="nom" required class="form-control" autocomplete="family-name">
+          </div>
+          <div class="form-group half">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" [(ngModel)]="prenom" required class="form-control" autocomplete="given-name">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="email">Adresse e-mail</label>
+            <input type="email" id="email" name="email" [(ngModel)]="email" required class="form-control" autocomplete="new-email">
+          </div>
+          <div class="form-group half">
+            <label for="telephone">Numéro de téléphone</label>
+            <input type="tel" id="telephone" name="telephone" [(ngModel)]="telephone" required class="form-control" autocomplete="tel">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half password-group">
+            <label for="password">Mot de passe</label>
+            <input [type]="showPassword ? 'text' : 'password'" id="password" name="password" [(ngModel)]="password" required class="form-control" autocomplete="new-password">
+            <span class="eye-icon" (click)="togglePassword()">
+              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+            </span>
+          </div>
+          <div class="form-group half password-group">
+            <label for="confirmPassword">Confirmer mot de passe</label>
+            <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required class="form-control" autocomplete="new-password">
+            <span class="eye-icon" (click)="toggleConfirmPassword()">
+              {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Information sur le magasin -->
+      <div class="section">
+        <h3 class="section-title">2. Information sur le magasin</h3>
+        
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="nomCommerce">Nom du commerce</label>
+            <input type="text" id="nomCommerce" name="nomCommerce" [(ngModel)]="nomCommerce" required class="form-control" autocomplete="organization">
+          </div>
+          <div class="form-group half">
+            <label for="categorie">Catégorie</label>
+            <select id="categorie" name="categorie" [(ngModel)]="categorie" required class="form-control">
+              <option value="">Sélectionner une catégorie</option>
+              <option value="alimentation">Alimentation</option>
+              <option value="vetements">Vêtements</option>
+              <option value="electronique">Électronique</option>
+              <option value="maison">Maison & Jardin</option>
+              <option value="beaute">Beauté & Santé</option>
+              <option value="sport">Sport & Loisirs</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="adresseMagasin">Adresse du magasin</label>
+          <textarea id="adresseMagasin" name="adresseMagasin" [(ngModel)]="adresseMagasin" required class="form-control" rows="3" autocomplete="street-address"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="ville">Ville / Région</label>
+            <input type="text" id="ville" name="ville" [(ngModel)]="ville" required class="form-control" autocomplete="address-level2">
+          </div>
+          <div class="form-group half">
+            <label for="logoMagasin">Logo du magasin (upload image)</label>
+            <input type="file" id="logoMagasin" name="logoMagasin" (change)="onLogoChange($event)" accept="image/*" class="form-control file-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descriptionMagasin">Courte description du magasin</label>
+          <textarea id="descriptionMagasin" name="descriptionMagasin" [(ngModel)]="descriptionMagasin" class="form-control" rows="3" autocomplete="off"></textarea>
+        </div>
+      </div>
+
+      <!-- Section 3: Détails professionnels -->
+      <div class="section">
+        <h3 class="section-title">3. Détails professionnels</h3>
+        
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="numeroIdentification">Numéro d'identification fiscale</label>
+            <input type="text" id="numeroIdentification" name="numeroIdentification" [(ngModel)]="numeroIdentification" class="form-control" autocomplete="off">
+          </div>
+          <div class="form-group half">
+            <label for="registreCommerce">Registre de commerce</label>
+            <input type="text" id="registreCommerce" name="registreCommerce" [(ngModel)]="registreCommerce" class="form-control" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="siteFacebook">Site web ou page Facebook</label>
+          <input type="url" id="siteFacebook" name="siteFacebook" [(ngModel)]="siteFacebook" class="form-control" autocomplete="url">
+        </div>
+      </div>
+
+      <!-- Section 4: Documents -->
+      <div class="section">
+        <h3 class="section-title">4. Détails professionnels</h3>
+        
+        <div class="form-group">
+          <label for="documentJustificatif">Joindre un document d'identité ou justificatif d'activité</label>
+          <input type="file" id="documentJustificatif" name="documentJustificatif" (change)="onDocumentChange($event)" accept=".pdf,.jpg,.jpeg,.png" class="form-control file-input">
+        </div>
+      </div>
+
+      <button type="submit" class="inscription-btn" [disabled]="!isFormValid()">
+        Inscription complète
+      </button>
+    </form>
+
+    <div class="footer-links">
+      <a href="#" class="footer-link" (click)="goToLogin(); $event.preventDefault()">
+        Avez-vous déjà un compte?
+      </a>
+      <a href="#" class="footer-link" (click)="goBack(); $event.preventDefault()">
+        Revenir à la page d'accueil
+      </a>
+    </div>
+  </div>
+</div>

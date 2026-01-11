@@ -1,0 +1,33 @@
+<div class="principal-container">
+  <div class="content">
+    <div class="logo-section">
+      <div class="logo">
+        <span class="cart-icon">🛒</span>
+        <span class="logo-text">ShopBinidik</span>
+      </div>
+    </div>
+
+    <div class="buttons-section">
+      <button class="role-button client-btn" (click)="navigateToClient()">
+        Client
+      </button>
+      
+      <button class="role-button merchant-btn" (click)="navigateToMerchant()">
+        Commerçant
+      </button>
+      
+      <button class="role-button delivery-btn" (click)="navigateToDelivery()">
+        Livreur
+      </button>
+    </div>
+
+    <div class="footer-links">
+      <a href="#" class="footer-link" (click)="goToWelcomePage(); $event.preventDefault()">
+        Revenir à la page d'accueil
+      </a>
+      <a href="#" class="footer-link" (click)="goToLogin(); $event.preventDefault()">
+        Avez-vous déjà un compte
+      </a>
+    </div>
+  </div>
+</div>

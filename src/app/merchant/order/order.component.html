@@ -39,8 +39,8 @@
               <small class="text-muted">{{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}</small>
             </div>
             <div class="col-md-3 col-3 text-end">
-              <span class="badge fs-6 px-3 py-2" [ngClass]="getStatusClass(order.orderStatus)">
-                {{ getStatusLabel(order.orderStatus) }}
+              <span class="badge fs-6 px-3 py-2" [ngClass]="getOrderStatusClass(order.orderStatus)">
+                {{ getOrderStatusLabel(order.orderStatus) }}
               </span>
             </div>
             <div class="col-md-1 col-12 text-end mt-2 mt-md-0">
@@ -86,34 +86,33 @@
                   <td>
                     <strong>{{ item.productName }}</strong>
                     <br>
-                    <small class="text-muted">{{ item.productDescription }}</small>
+                    <small class="text-muted">Description non disponible</small>
                   </td>
                   <td class="text-center">
-                    <span class="badge bg-secondary">{{ item.sizeName }}</span>
+                    <span class="badge bg-secondary">{{ item.sizeName || 'N/A' }}</span>
                   </td>
                   <td class="text-center">
                     <div class="d-flex align-items-center justify-content-center">
                       <span class="color-preview me-1" 
-                            [style.background-color]="item.colorCode"
+                            [style.background-color]="'#000000'"
                             style="width: 20px; height: 20px; border-radius: 3px; border: 1px solid #ddd; display: inline-block;"></span>
-                      <small>{{ item.colorName }}</small>
+                      <small>{{ item.colorName || 'N/A' }}</small>
                     </div>
                   </td>
                   <td class="text-center">
-                    <span class="badge" 
-                          [ngClass]="item.disponibilite > 0 ? 'bg-success' : 'bg-danger'">
-                      {{ item.disponibilite > 0 ? 'En stock' : 'Rupture' }}
+                    <span class="badge bg-success">
+                      En stock
                     </span>
                   </td>
                   <td class="text-center">
                     <span class="badge bg-info">Moto</span>
                   </td>
-                  <td class="text-center">{{ item.prix | currency:'MAD ' }}</td>
+                  <td class="text-center">{{ item.unitPrice | currency:'MAD ' }}</td>
                   <td class="text-center">
-                    <span class="badge bg-secondary">{{ item.quantite }}</span>
+                    <span class="badge bg-secondary">{{ item.quantity }}</span>
                   </td>
                   <td class="text-end">
-                    <strong>{{ item.total | currency:'MAD ' }}</strong>
+                    <strong>{{ item.totalPrice | currency:'MAD ' }}</strong>
                   </td>
                 </tr>
               </tbody>
@@ -133,7 +132,7 @@
               
               <button class="btn btn-primary w-100 mt-3" 
                       (click)="validateOrder(order.numberOrder)"
-                      *ngIf="order.orderStatus === StatusOrder.EN_TRAITEMENT">
+                      *ngIf="order.orderStatus === 'EN_TRAITEMENT'">
                 <i class="bi bi-check-circle me-2"></i>
                 VALIDER LA COMMANDE
               </button>
@@ -162,12 +161,12 @@
                   <i class="bi bi-eye me-1"></i> Détails
                 </button>
                 <button class="btn btn-sm btn-outline-success" 
-                        (click)="progressOrder(order.numberOrder, order.orderStatus)"
-                        *ngIf="order.orderStatus !== StatusOrder.LIVREE">
+                        (click)="progressOrderStatus(order.numberOrder)"
+                        *ngIf="order.orderStatus !== 'LIVREE'">
                   <i class="bi bi-arrow-right-circle me-1"></i> 
-                  <span *ngIf="order.orderStatus === StatusOrder.EN_TRAITEMENT">Préparer</span>
-                  <span *ngIf="order.orderStatus === StatusOrder.PREPAREE">Expédier</span>
-                  <span *ngIf="order.orderStatus === StatusOrder.EXPEDIEE">Marquer livrée</span>
+                  <span *ngIf="order.orderStatus === 'EN_TRAITEMENT'">Préparer</span>
+                  <span *ngIf="order.orderStatus === 'PREPAREE'">Expédier</span>
+                  <span *ngIf="order.orderStatus === 'EXPEDIEE'">Marquer livrée</span>
                 </button>
               </div>
             </div>
