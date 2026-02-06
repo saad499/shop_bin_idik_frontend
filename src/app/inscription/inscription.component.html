@@ -8,16 +8,30 @@
     </div>
 
     <form (ngSubmit)="onInscription()" #inscriptionForm="ngForm">
-      <div class="form-group">
-        <label for="email">Email ou Username</label>
-        <input 
-          type="email" 
-          id="email"
-          name="email" 
-          [(ngModel)]="email" 
-          required
-          class="form-control"
-          autocomplete="new-email">
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email"
+            name="email" 
+            [(ngModel)]="email" 
+            required
+            class="form-control"
+            autocomplete="new-email">
+        </div>
+        
+        <div class="form-group half">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username"
+            name="username" 
+            [(ngModel)]="username" 
+            required
+            class="form-control"
+            autocomplete="username">
+        </div>
       </div>
 
       <div class="form-row">
@@ -44,6 +58,30 @@
             class="form-control"
             autocomplete="given-name">
         </div>
+      </div>
+
+      <div class="form-group">
+        <label for="telephone">Téléphone</label>
+        <input 
+          type="tel" 
+          id="telephone"
+          name="telephone" 
+          [(ngModel)]="telephone" 
+          required
+          class="form-control"
+          autocomplete="tel">
+      </div>
+
+      <div class="form-group">
+        <label for="adresse">Adresse</label>
+        <textarea 
+          id="adresse"
+          name="adresse" 
+          [(ngModel)]="adresse" 
+          required
+          class="form-control"
+          rows="3"
+          autocomplete="street-address"></textarea>
       </div>
 
       <div class="form-row">

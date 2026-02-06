@@ -6,7 +6,9 @@
         <span class="logo-text">ShopBinidik</span>
       </div>
     </div>
-
+    <div class="alert alert-danger" role="alert" *ngIf="showError">
+      username or password is incorrect
+    </div>
     <form (ngSubmit)="onLogin()" #loginForm="ngForm">
       <div class="form-group">
         <input 
@@ -37,7 +39,7 @@
         type="submit" 
         class="login-btn"
         [disabled]="!loginForm.form.valid">
-        Connexion
+        <span>Connexion</span>
       </button>
     </form>
 

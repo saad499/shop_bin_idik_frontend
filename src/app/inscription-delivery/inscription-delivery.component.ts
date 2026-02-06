@@ -2,11 +2,16 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import { LivreurService } from '../services/livreur.service';
+import { LivreurDto } from '../dto/livreur.dto';
+import { TypeVehicule } from '../dto/type-vehicule.enum';
+import { UserDTO } from '../dto/user.dto';
 
 @Component({
   selector: 'app-inscription-delivery',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './inscription-delivery.component.html',
   styleUrl: './inscription-delivery.component.css'
 })
@@ -19,10 +24,10 @@ export class InscriptionDeliveryComponent {
   motDePasse: string = '';
   confirmerMotDePasse: string = '';
   photoConducteur: File | null = null;
-  
+
   // Section 2: Type de véhicule
   typeVehicule: string = '';
-  
+
   // Section 3: Info véhicule
   marque: string = '';
   numeroimmatriculation: string = '';
@@ -39,13 +44,23 @@ export class InscriptionDeliveryComponent {
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private livreurService: LivreurService) {}
 
   onInscription() {
     if (this.isFormValid()) {
-      console.log('Inscription livreur:', this.getFormData());
-      alert('Inscription livreur réussie!');
-      this.router.navigate(['/login']);
+      const livreurData: LivreurDto = this.mapToLivreurDto();
+      
+      this.livreurService.saveLivreur(livreurData).subscribe({
+        next: (savedLivreur) => {
+          console.log('Livreur saved successfully:', savedLivreur);
+          alert('Inscription livreur réussie!');
+          this.router.navigate(['/login']);
+        },
+        error: (error) => {
+          console.error('Error saving livreur:', error);
+          alert('Erreur lors de l\'inscription. Veuillez réessayer.');
+        }
+      });
     } else {
       alert('Veuillez remplir tous les champs obligatoires et vérifier que les mots de passe correspondent.');
     }
@@ -61,17 +76,34 @@ export class InscriptionDeliveryComponent {
            this.typeVehicule.trim() !== '';
   }
 
-  getFormData() {
+  private mapToLivreurDto(): LivreurDto {
     return {
       nomComplet: this.nomComplet,
-      adresseEmail: this.adresseEmail,
-      numeroTelephone: this.numeroTelephone,
-      nomCommerce: this.nomCommerce,
-      typeVehicule: this.typeVehicule,
-      marque: this.marque,
-      numeroimmatriculation: this.numeroimmatriculation,
-      numeroPermisConduire: this.numeroPermisConduire
+      telephone: this.numeroTelephone,
+      nomCommerce: this.nomCommerce || '',
+      typeVehicule: this.getTypeVehicule(),
+      numImmatriculation: this.numeroimmatriculation || this.numeroImmatriculationVoiture || '',
+      numeroPermis: this.numeroPermisConduire || '',
+      user: {
+        email: this.adresseEmail,
+        username: this.adresseEmail, // Use email as username
+        password: this.motDePasse,
+        role: 'LIVREUR'
+      }
     };
+  }
+
+  private getTypeVehicule(): TypeVehicule {
+    switch (this.typeVehicule.toLowerCase()) {
+      case 'moto':
+        return TypeVehicule.MOTO;
+      case 'voiture':
+        return TypeVehicule.VOITURE;
+      case 'camion':
+        return TypeVehicule.CAMION;
+      default:
+        return TypeVehicule.MOTO;
+    }
   }
 
   togglePassword() {

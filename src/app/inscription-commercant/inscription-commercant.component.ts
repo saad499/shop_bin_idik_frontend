@@ -2,11 +2,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import { CommercantService } from '../services/commercant.service';
+import { CommercantDTO } from '../dto/commercant.dto';
+import { UserDTO } from '../dto/user.dto';
 
 @Component({
   selector: 'app-inscription-commercant',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './inscription-commercant.component.html',
   styleUrl: './inscription-commercant.component.css'
 })
@@ -39,13 +43,23 @@ export class InscriptionCommercantComponent {
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private commercantService: CommercantService) {}
 
   onInscription() {
     if (this.isFormValid()) {
-      console.log('Inscription commerçant:', this.getFormData());
-      alert('Inscription commerçant réussie!');
-      this.router.navigate(['/login']);
+      const commercantData: CommercantDTO = this.mapToCommercantDto();
+      
+      this.commercantService.saveCommercant(commercantData).subscribe({
+        next: (savedCommercant) => {
+          console.log('Commercant saved successfully:', savedCommercant);
+          alert('Inscription commerçant réussie!');
+          this.router.navigate(['/login']);
+        },
+        error: (error) => {
+          console.error('Error saving commercant:', error);
+          alert('Erreur lors de l\'inscription. Veuillez réessayer.');
+        }
+      });
     } else {
       alert('Veuillez remplir tous les champs obligatoires et vérifier que les mots de passe correspondent.');
     }
@@ -110,5 +124,25 @@ export class InscriptionCommercantComponent {
 
   goBack() {
     this.router.navigate(['/principal']);
+  }
+
+  private mapToCommercantDto(): CommercantDTO {
+    return {
+      nom: this.nom,
+      prenom: this.prenom,
+      telephone: this.telephone,
+      nomCommerce: this.nomCommerce,
+      categorie: this.categorie,
+      adresse: this.adresseMagasin,
+      ville: this.ville,
+      description: this.descriptionMagasin,
+      numImmatriculationFiscale: this.numeroIdentification,
+      registreCommerce: this.registreCommerce,
+      user: {
+        email: this.email,
+        username: this.email,
+        password: this.password
+      } as UserDTO
+    };
   }
 }

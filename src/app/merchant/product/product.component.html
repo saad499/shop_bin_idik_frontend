@@ -1,29 +1,40 @@
 <div class="container-fluid p-3 p-md-5">
-  <div class="section-header">
-    <h2><i class="bi bi-grid-3x3-gap"></i> Mes Produits</h2>
-    <div class="search-container">
+  <div class="pb-2 section-header d-flex justify-content-between align-items-center">
+    <h2 class="text-dark"><i class="bi bi-grid-3x3-gap"></i> Mes Produits</h2>
+    <div class="search-container position-relative">
       <input 
         type="text" 
         class="search-input" 
         placeholder="Rechercher un produit..."
         [(ngModel)]="searchTerm"
         (input)="onSearchChange($event.target.value)"/>
-      <i class="bi bi-search search-icon"></i>
-    </div>
+        <i class="bi bi-search search-icon"></i>
+      </div>
   </div>
+  <!--
+  <div class="search-container">
+            <input 
+              type="text" 
+              class="search-input" 
+              placeholder="Rechercher un magasin..."
+              [(ngModel)]="storeSearchTerm"
+              (input)="onStoreSearchChange($event)"/>
+            <i class="bi bi-search search-icon"></i>
+          </div>
+  -->
   <div class="table-responsive">
     <table class="table table-sm table-hover">
     <thead class="table-light">
       <tr>
-        <th class="d-none d-lg-table-cell">Image</th>
-        <th>Nom</th>
-        <th>Prix</th>
-        <th class="d-none d-md-table-cell">Stock</th>
-        <th class="d-none d-xl-table-cell">Tailles</th>
-        <th class="d-none d-lg-table-cell">Catégorie</th>
-        <th class="d-none d-md-table-cell">Status</th>
-        <th class="d-none d-xl-table-cell">Date création</th>
-        <th>Action</th>
+        <th class="d-none d-lg-table-cell text-dark">Image</th>
+        <th class="text-dark">Nom</th>
+        <th class="text-dark">Prix</th>
+        <th class="d-none d-md-table-cell text-dark">Stock</th>
+        <th class="d-none d-xl-table-cell text-dark">Tailles</th>
+        <th class="d-none d-lg-table-cell text-dark">Catégorie</th>
+        <th class="d-none d-md-table-cell text-dark">Status</th>
+        <th class="d-none d-xl-table-cell text-dark">Date création</th>
+        <th class="text-dark">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -40,14 +51,14 @@
                 alt="{{ product.nom }}" 
                 class="img-thumbnail d-lg-none me-2" 
                 style="width: 40px; height: 40px; object-fit: cover;">
-          <span>{{ product.nom }}</span>
+          <span class="text-dark">{{ product.nom }}</span>
         </div>
       </td>
-      <td class="text-nowrap">{{ product.prix | currency:'MAD ' }}</td>
-      <td class="d-none d-md-table-cell">{{ product.stock }}</td>
-      <td class="d-none d-xl-table-cell">{{ getSizes(product) }}</td>
-      <td class="d-none d-lg-table-cell">{{ getCategorieName(product) }}</td>
-      <td class="d-none d-md-table-cell">
+      <td class="text-nowrap text-dark">{{ product.prix | currency:'MAD ' }}</td>
+      <td class="d-none d-md-table-cell text-dark">{{ product.stock }}</td>
+      <td class="d-none d-xl-table-cell text-dark">{{ getSizes(product) }}</td>
+      <td class="d-none d-lg-table-cell text-dark">{{ getCategorieName(product) }}</td>
+      <td class="d-none d-md-table-cell text-dark">
         <div class="form-check form-switch">
           <input 
             class="form-check-input" 
@@ -58,7 +69,7 @@
             role="switch">
         </div>
       </td>
-      <td class="d-none d-xl-table-cell text-nowrap">{{ getDateCreated(product) | date:'short' }}</td>
+      <td class="d-none d-xl-table-cell text-nowrap text-dark">{{ getDateCreated(product) | date:'short' }}</td>
       <td>
         <div class="btn-group-vertical d-md-none" role="group">
           <button class="btn btn-sm btn-warning mb-1" 
@@ -102,7 +113,7 @@
 
 <div class="row mt-3 g-2">
     <div class="col-12 col-md-6 text-center text-md-start">
-      <p class="text-muted mb-2 mb-md-0 small">
+      <p class="text-dark mb-2 mb-md-0 small">
         Affichage de {{ currentPage * pageSize + 1 }} à 
         {{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }} 
         sur {{ totalItems }} produits
@@ -150,27 +161,27 @@
     <form>
       <div class="row">
         <div class="col-12 col-md-6 mb-3">
-          <label class="form-label">Nom du produit *</label>
+          <label class="form-label text-dark">Nom du produit *</label>
           <input type="text" class="form-control" 
                  [(ngModel)]="editingProduct.nom" 
                  name="nom" />
         </div>
         <div class="col-12 col-md-6 mb-3">
-          <label class="form-label">Prix (MAD) *</label>
+          <label class="form-label text-dark">Prix (MAD) *</label>
           <input type="number" class="form-control" 
                  [(ngModel)]="editingProduct.prix" 
                  name="prix" />
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Description</label>
+        <label class="form-label text-dark">Description</label>
         <textarea class="form-control" rows="3"
                   [(ngModel)]="editingProduct.description" 
                   name="description"></textarea>
       </div>
       <div class="row">
         <div class="col-12 col-md-6 mb-3">
-          <label class="form-label">Catégorie *</label>
+          <label class="form-label text-dark">Catégorie *</label>
           <select class="form-select"
                   [(ngModel)]="editingProduct.categorieId"
                   name="categorieId">
@@ -180,14 +191,14 @@
           </select>
         </div>
         <div class="col-12 col-md-6 mb-3">
-          <label class="form-label">Stock *</label>
+          <label class="form-label text-dark">Stock *</label>
           <input type="number" class="form-control" 
                  [(ngModel)]="editingProduct.stock" 
                  name="stock" />
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Tailles disponibles</label>
+        <label class="form-label text-dark">Tailles disponibles</label>
         <div class="input-group mb-2">
           <input type="text" class="form-control" 
                  placeholder="Ex: S, M, L, XL" 
@@ -208,7 +219,7 @@
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Couleurs du produit</label>
+        <label class="form-label text-dark">Couleurs du produit</label>
         <div class="row g-2 mb-2">
           <div class="col-12 col-sm-6">
             <input type="text" class="form-control" 
@@ -241,7 +252,7 @@
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Images du produit</label>
+        <label class="form-label text-dark">Images du produit</label>
         <input type="file" class="form-control" 
                multiple accept="image/*" 
                (change)="onFilesSelected($event)">
@@ -260,7 +271,7 @@
       </div>
       <div class="row">
         <div class="col-12 col-md-6 mb-3">
-          <label class="form-label">Statut</label>
+          <label class="form-label text-dark">Statut</label>
           <select class="form-select"
                   [(ngModel)]="editingProduct.status"
                   name="status">
@@ -269,12 +280,12 @@
           </select>
         </div>
         <div class="col-12 col-md-6 mb-3">
-          <label class="form-label d-block">Actif pour la vente</label>
+          <label class="form-label text-dark d-block">Actif pour la vente</label>
           <div class="form-check form-switch mt-2">
             <input class="form-check-input" type="checkbox" 
                    [(ngModel)]="editingProduct.isActiveProduct"
                    name="isActiveProduct">
-            <label class="form-check-label">
+            <label class="form-check-label text-dark">
               Produit actif
             </label>
           </div>
@@ -313,7 +324,7 @@
       <!-- Product Name -->
       <div class="mb-3 mb-md-4">
         <h4 class="text-primary fs-5 fs-md-4">{{ viewingProduct.nom }}</h4>
-        <p class="text-muted small" *ngIf="viewingProduct.description">
+        <p class="text-dark small" *ngIf="viewingProduct.description">
           {{ viewingProduct.description }}
         </p>
       </div>
@@ -356,11 +367,11 @@
       <!-- Price and Stock -->
       <div class="row mb-3 mb-md-4">
         <div class="col-6">
-          <label class="fw-bold d-block mb-2 small">Prix</label>
+          <label class="fw-bold d-block mb-2 small text-dark">Prix</label>
           <h5 class="text-success fs-6 fs-md-5">{{ viewingProduct.prix | currency:'MAD ' }}</h5>
         </div>
         <div class="col-6">
-          <label class="fw-bold d-block mb-2 small">Stock disponible</label>
+          <label class="fw-bold d-block mb-2 small text-dark">Stock disponible</label>
           <h5 class="fs-6 fs-md-5"
               [class.text-danger]="viewingProduct.stock < 10" 
               [class.text-warning]="viewingProduct.stock >= 10 && viewingProduct.stock < 50"
@@ -372,21 +383,21 @@
 
       <!-- Colors -->
       <div class="mb-3 mb-md-4" *ngIf="viewingProduct.colors && viewingProduct.colors.length > 0">
-        <label class="fw-bold d-block mb-2 small">Couleurs disponibles</label>
+        <label class="fw-bold d-block mb-2 small text-dark">Couleurs disponibles</label>
         <div class="d-flex flex-wrap gap-2">
           <div *ngFor="let color of viewingProduct.colors" 
                class="d-flex align-items-center border rounded p-2">
             <span class="color-box me-2" 
                   [style.background-color]="color.colorCode"
                   style="width: 30px; height: 30px; border-radius: 5px; border: 2px solid #ddd; display: inline-block;"></span>
-            <span class="small fw-semibold">{{ color.colorName }}</span>
+            <span class="small fw-semibold text-dark">{{ color.colorName }}</span>
           </div>
         </div>
       </div>
 
       <!-- Sizes -->
       <div class="mb-3 mb-md-4" *ngIf="viewingProduct.sizes && viewingProduct.sizes.length > 0">
-        <label class="fw-bold d-block mb-2 small">Tailles disponibles</label>
+        <label class="fw-bold d-block mb-2 small text-dark">Tailles disponibles</label>
         <div class="d-flex flex-wrap gap-2">
           <span *ngFor="let size of viewingProduct.sizes" 
                 class="badge bg-secondary px-2 py-1">
@@ -397,7 +408,7 @@
 
       <!-- Category -->
       <div class="mb-3 mb-md-4">
-        <label class="fw-bold d-block mb-2 small">Catégorie</label>
+        <label class="fw-bold d-block mb-2 small text-dark">Catégorie</label>
         <span class="badge bg-info px-2 py-1">
           {{ getCategorieName(viewingProduct) }}
         </span>
@@ -407,7 +418,7 @@
       <div class="mb-3 mb-md-4">
         <div class="row">
           <div class="col-6">
-            <label class="fw-bold d-block mb-2 small">Statut</label>
+            <label class="fw-bold d-block mb-2 small text-dark">Statut</label>
             <span class="badge px-2 py-1"
                   [class.bg-success]="viewingProduct.status === 'ACTIF'"
                   [class.bg-danger]="viewingProduct.status === 'INACTIF'">
@@ -415,7 +426,7 @@
             </span>
           </div>
           <div class="col-6">
-            <label class="fw-bold d-block mb-2 small">Actif pour la vente</label>
+            <label class="fw-bold d-block mb-2 small text-dark">Actif pour la vente</label>
             <span class="badge px-2 py-1"
                   [class.bg-success]="viewingProduct.isActiveProduct"
                   [class.bg-secondary]="!viewingProduct.isActiveProduct">
@@ -427,8 +438,8 @@
 
       <!-- Date Created -->
       <div class="mb-3">
-        <label class="fw-bold d-block mb-2 small">Date de création</label>
-        <p class="text-muted small mb-0">{{ getDateCreated(viewingProduct) | date:'medium' }}</p>
+        <label class="fw-bold d-block mb-2 small text-dark">Date de création</label>
+        <p class="text-dark small mb-0">{{ getDateCreated(viewingProduct) | date:'medium' }}</p>
       </div>
 
     </div>

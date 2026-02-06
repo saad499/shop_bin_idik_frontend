@@ -4,7 +4,16 @@
     <div class="col-md-12">
       <div class="d-flex justify-content-between align-items-center">
         <div class="section-header">
-          <h2><i class="bi bi-receipt"></i> Mes Commandes</h2>
+          <h2 class="text-dark"><i class="bi bi-receipt"></i> Mes Commandes</h2>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <select class="form-select text-dark" [(ngModel)]="selectedStatus" (change)="filterByStatus()" style="width: 200px;">
+            <option value="">Tous les statuts</option>
+            <option value="EN_TRAITEMENT">En traitement</option>
+            <option value="PREPAREE">Préparée</option>
+            <option value="EXPEDIEE">Expédiée</option>
+            <option value="LIVREE">Livrée</option>
+          </select>
           <div class="search-container">
             <input 
               type="text" 
@@ -14,15 +23,7 @@
               (input)="onSearchChange($event.target.value)"/>
             <i class="bi bi-search search-icon"></i>
           </div>
-        </div>
-        <div class="d-flex gap-2">
-          <select class="form-select" [(ngModel)]="selectedStatus" (change)="filterByStatus()" style="width: 200px;">
-            <option value="">Tous les statuts</option>
-            <option value="EN_TRAITEMENT">En traitement</option>
-            <option value="PREPAREE">Préparée</option>
-            <option value="EXPEDIEE">Expédiée</option>
-            <option value="LIVREE">Livrée</option>
-          </select>
+          
         </div>
       </div>
     </div>
@@ -35,7 +36,7 @@
         <div class="card-header bg-white border-bottom">
           <div class="row align-items-center">
             <div class="col-md-8 col-9">
-              <h5 class="mb-0">Commande #{{ order.numberOrder }}</h5>
+              <h5 class="mb-0 text-dark">Commande #{{ order.numberOrder }}</h5>
               <small class="text-muted">{{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}</small>
             </div>
             <div class="col-md-3 col-3 text-end">
@@ -65,14 +66,14 @@
               <thead class="table-light">
                 <tr>
                   <th style="width: 80px;"></th>
-                  <th>Description</th>
-                  <th class="text-center">Taille</th>
-                  <th class="text-center">Couleur</th>
-                  <th class="text-center">Disponibilité</th>
-                  <th class="text-center">Type Véhicule</th>
-                  <th class="text-center">Prix</th>
-                  <th class="text-center">Quantité</th>
-                  <th class="text-end">Total</th>
+                  <th class="text-dark">Description</th>
+                  <th class="text-center text-dark">Taille</th>
+                  <th class="text-center text-dark">Couleur</th>
+                  <th class="text-center text-dark">Disponibilité</th>
+                  <th class="text-center text-dark">Type Véhicule</th>
+                  <th class="text-center text-dark">Prix</th>
+                  <th class="text-center text-dark">Quantité</th>
+                  <th class="text-end text-dark">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,14 +85,14 @@
                          style="width: 60px; height: 60px; object-fit: cover;">
                   </td>
                   <td>
-                    <strong>{{ item.productName }}</strong>
+                    <strong class="text-dark">{{ item.productName }}</strong>
                     <br>
                     <small class="text-muted">Description non disponible</small>
                   </td>
-                  <td class="text-center">
+                  <td class="text-center text-dark">
                     <span class="badge bg-secondary">{{ item.sizeName || 'N/A' }}</span>
                   </td>
-                  <td class="text-center">
+                  <td class="text-center text-dark">
                     <div class="d-flex align-items-center justify-content-center">
                       <span class="color-preview me-1" 
                             [style.background-color]="'#000000'"
@@ -99,20 +100,20 @@
                       <small>{{ item.colorName || 'N/A' }}</small>
                     </div>
                   </td>
-                  <td class="text-center">
+                  <td class="text-center text-dark">
                     <span class="badge bg-success">
                       En stock
                     </span>
                   </td>
-                  <td class="text-center">
+                  <td class="text-center text-dark">
                     <span class="badge bg-info">Moto</span>
                   </td>
-                  <td class="text-center">{{ item.unitPrice | currency:'MAD ' }}</td>
-                  <td class="text-center">
+                  <td class="text-center text-dark">{{ item.unitPrice | currency:'MAD ' }}</td>
+                  <td class="text-center text-dark">
                     <span class="badge bg-secondary">{{ item.quantity }}</span>
                   </td>
                   <td class="text-end">
-                    <strong>{{ item.totalPrice | currency:'MAD ' }}</strong>
+                    <strong class="text-dark">{{ item.totalPrice | currency:'MAD ' }}</strong>
                   </td>
                 </tr>
               </tbody>
@@ -125,11 +126,10 @@
             <div class="col-md-4">
               <div class="border rounded p-3 bg-light">
                 <div class="d-flex justify-content-between">
-                  <span class="fs-5"><strong>TOTAL :</strong></span>
+                  <span class="fs-5 text-dark"><strong>TOTAL :</strong></span>
                   <span class="fs-5 text-primary"><strong>{{ order.total | currency:'MAD ' }}</strong></span>
                 </div>
               </div>
-              
               <button class="btn btn-primary w-100 mt-3" 
                       (click)="validateOrder(order.numberOrder)"
                       *ngIf="order.orderStatus === 'EN_TRAITEMENT'">
@@ -143,13 +143,13 @@
           <div class="row mt-3">
             <div class="col-md-6">
               <h6 class="text-muted mb-2">Informations client</h6>
-              <p class="mb-1"><strong>{{ getClientFullName(order) }}</strong></p>
-              <p class="mb-1"><i class="bi bi-envelope me-2"></i>{{ order.clientEmail }}</p>
-              <p class="mb-1"><i class="bi bi-telephone me-2"></i>{{ order.clientTelephone }}</p>
+              <p class="mb-1 text-dark"><strong>{{ getClientFullName(order) }}</strong></p>
+              <p class="mb-1 text-dark"><i class="bi bi-envelope me-2"></i>{{ order.clientEmail }}</p>
+              <p class="mb-1 text-dark"><i class="bi bi-telephone me-2"></i>{{ order.clientTelephone }}</p>
             </div>
             <div class="col-md-6">
               <h6 class="text-muted mb-2">Adresse de livraison</h6>
-              <p class="mb-1">{{ order.clientAdresse }}</p>
+              <p class="mb-1 text-dark">{{ order.clientAdresse }}</p>
             </div>
           </div>
 
@@ -177,7 +177,7 @@
       <!-- Message si aucune commande -->
       <div class="alert alert-info text-center" *ngIf="orders.length === 0 && !isLoading">
         <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-        <h5>Aucune commande trouvée</h5>
+        <h5 class="text-dark">Aucune commande trouvée</h5>
         <p class="text-muted">Les commandes de vos clients apparaîtront ici.</p>
       </div>
 
@@ -194,7 +194,7 @@
   <!-- Pagination -->
   <div class="row mt-4" *ngIf="orders.length > 0">
     <div class="col-md-6">
-      <p class="text-muted">
+      <p class="text-dark">
         Affichage de {{ currentPage * pageSize + 1 }} à 
         {{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }} 
         sur {{ totalItems }} commandes
